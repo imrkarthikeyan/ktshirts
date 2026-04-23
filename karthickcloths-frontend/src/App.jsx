@@ -19,13 +19,15 @@ import Wishlist from "./pages/Wishlist";
 import Footer from "./components/Footer";
 
 function App() {
-    const [isDark, setIsDark] = useState(false);
+    const [isDark, setIsDark] = useState(() => {
+        const storedTheme = localStorage.getItem("kc-theme");
+        return storedTheme ? storedTheme === "dark" : true;
+    });
     const navigate = useNavigate();
 
     useEffect(() => {
         const storedTheme = localStorage.getItem("kc-theme");
-        const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-        const shouldUseDark = storedTheme ? storedTheme === "dark" : prefersDark;
+        const shouldUseDark = storedTheme ? storedTheme === "dark" : true;
 
         setIsDark(shouldUseDark);
         document.documentElement.classList.toggle("dark", shouldUseDark);
