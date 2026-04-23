@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Navigate, Route, Routes, useNavigate } from "react-router-dom";
+import { Navigate, Route, Routes, useLocation, useNavigate } from "react-router-dom";
 import Navbar from "./components/Navbar";
 import ProtectedRoute from "./components/ProtectedRoute";
 import HomePage from "./pages/HomePage";
@@ -24,6 +24,7 @@ function App() {
         return storedTheme ? storedTheme === "dark" : true;
     });
     const navigate = useNavigate();
+    const location = useLocation();
 
     useEffect(() => {
         const storedTheme = localStorage.getItem("kc-theme");
@@ -32,6 +33,10 @@ function App() {
         setIsDark(shouldUseDark);
         document.documentElement.classList.toggle("dark", shouldUseDark);
     }, []);
+
+    useEffect(() => {
+        window.scrollTo(0, 0);
+    }, [location.pathname]);
 
     const toggleTheme = () => {
         setIsDark((prev) => {

@@ -82,22 +82,22 @@ const Profile = ({ isDark }) => {
                 {/* Profile Card */}
                 <div className={isDark ? "bg-gray-900 border border-gray-800 rounded-2xl p-8 mb-8 animate-fade-up" : "bg-white border border-zinc-200 rounded-2xl p-8 mb-8 animate-fade-up"}>
                     {/* Profile Header */}
-                    <div className={isDark ? "flex items-center justify-between mb-8 pb-8 border-b border-gray-800" : "flex items-center justify-between mb-8 pb-8 border-b border-zinc-200"}>
-                        <div className="flex items-center gap-4">
+                    <div className={isDark ? "flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-8 pb-8 border-b border-gray-800" : "flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-8 pb-8 border-b border-zinc-200"}>
+                        <div className="flex min-w-0 items-center gap-4">
                             <div className={isDark ? "w-16 h-16 bg-gradient-to-br from-white to-gray-400 rounded-full flex items-center justify-center" : "w-16 h-16 bg-gradient-to-br from-zinc-900 to-zinc-500 rounded-full flex items-center justify-center"}>
                                 <span className={isDark ? "text-2xl font-black text-black" : "text-2xl font-black text-white"}>
                                     {user.fullName?.charAt(0).toUpperCase()}
                                 </span>
                             </div>
-                            <div>
-                                <h2 className={isDark ? "text-2xl font-bold text-white" : "text-2xl font-bold text-zinc-900"}>{user.fullName}</h2>
-                                <p className={isDark ? "text-gray-400" : "text-zinc-600"}>{user.email}</p>
+                            <div className="min-w-0">
+                                <h2 className={isDark ? "truncate text-2xl font-bold text-white" : "truncate text-2xl font-bold text-zinc-900"}>{user.fullName}</h2>
+                                <p className={isDark ? "truncate text-gray-400" : "truncate text-zinc-600"}>{user.email}</p>
                             </div>
                         </div>
                         {!isEditing && (
                             <button
                                 onClick={() => setIsEditing(true)}
-                                className={isDark ? "px-6 py-2 bg-white text-black font-bold rounded-lg hover:bg-gray-200 transition-all" : "px-6 py-2 bg-zinc-900 text-white font-bold rounded-lg hover:bg-black transition-all"}
+                                className={isDark ? "w-full sm:w-auto px-6 py-2 bg-white text-black font-bold rounded-lg hover:bg-gray-200 transition-all" : "w-full sm:w-auto px-6 py-2 bg-zinc-900 text-white font-bold rounded-lg hover:bg-black transition-all"}
                             >
                                 Edit Profile
                             </button>
