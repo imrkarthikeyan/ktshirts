@@ -1,5 +1,6 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import { useAuth } from './AuthContext';
+import { API_BASE_URL } from '../services/api';
 
 const CartContext = createContext();
 
@@ -24,7 +25,7 @@ export const CartProvider = ({ children }) => {
         setLoading(true);
         setError(null);
         try {
-            const response = await fetch('http://localhost:8080/api/cart/items', {
+            const response = await fetch(`${API_BASE_URL}/cart/items`, {
                 headers: {
                     'Authorization': `Bearer ${token}`,
                 },
@@ -50,7 +51,7 @@ export const CartProvider = ({ children }) => {
         setLoading(true);
         setError(null);
         try {
-            const response = await fetch('http://localhost:8080/api/cart/add', {
+            const response = await fetch(`${API_BASE_URL}/cart/add`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -80,7 +81,7 @@ export const CartProvider = ({ children }) => {
         setLoading(true);
         setError(null);
         try {
-            const response = await fetch(`http://localhost:8080/api/cart/update/${cartItemId}`, {
+            const response = await fetch(`${API_BASE_URL}/cart/update/${cartItemId}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
@@ -109,7 +110,7 @@ export const CartProvider = ({ children }) => {
         setLoading(true);
         setError(null);
         try {
-            const response = await fetch(`http://localhost:8080/api/cart/remove/${cartItemId}`, {
+            const response = await fetch(`${API_BASE_URL}/cart/remove/${cartItemId}`, {
                 method: 'DELETE',
                 headers: {
                     'Authorization': `Bearer ${token}`,
@@ -136,7 +137,7 @@ export const CartProvider = ({ children }) => {
         setLoading(true);
         setError(null);
         try {
-            const response = await fetch('http://localhost:8080/api/cart/clear', {
+            const response = await fetch(`${API_BASE_URL}/cart/clear`, {
                 method: 'DELETE',
                 headers: {
                     'Authorization': `Bearer ${token}`,
