@@ -4,12 +4,48 @@ const API_BASE_URL =
 
 export { API_BASE_URL };
 
+const hasOnlineImageUrl = (url) => typeof url === "string" && /^https?:\/\//i.test(url);
+
+const getTempImages = (seed) => [
+    `https://picsum.photos/seed/kc-${seed}-1/900/1200`,
+    `https://picsum.photos/seed/kc-${seed}-2/900/1200`,
+    `https://picsum.photos/seed/kc-${seed}-3/900/1200`,
+    `https://picsum.photos/seed/kc-${seed}-4/900/1200`,
+];
+
+const normalizeProductImages = (product, index = 0) => {
+    const seed = product?.id ?? `product-${index}`;
+    const apiImages = Array.isArray(product?.images)
+        ? product.images.filter(hasOnlineImageUrl)
+        : [];
+
+    if (apiImages.length > 0) {
+        return { ...product, images: apiImages };
+    }
+
+    if (hasOnlineImageUrl(product?.imageUrl)) {
+        return {
+            ...product,
+            images: [product.imageUrl, ...getTempImages(`${seed}-extra`).slice(0, 3)],
+        };
+    }
+
+    return {
+        ...product,
+        images: getTempImages(seed),
+    };
+};
+
+const normalizeProductList = (data) =>
+    Array.isArray(data) ? data.map((product, index) => normalizeProductImages(product, index)) : [];
+
 export async function fetchMenProducts() {
     const response = await fetch(`${API_BASE_URL}/products/men`);
     if (!response.ok) {
         throw new Error("Unable to fetch men products");
     }
-    return response.json();
+    const data = await response.json();
+    return normalizeProductList(data);
 }
 
 export async function fetchMenProductById(productId) {
@@ -17,7 +53,8 @@ export async function fetchMenProductById(productId) {
     if (!response.ok) {
         throw new Error("Unable to fetch product details");
     }
-    return response.json();
+    const data = await response.json();
+    return normalizeProductImages(data);
 }
 
 export async function fetchWomenProducts() {
@@ -25,7 +62,8 @@ export async function fetchWomenProducts() {
     if (!response.ok) {
         throw new Error("Unable to fetch women products");
     }
-    return response.json();
+    const data = await response.json();
+    return normalizeProductList(data);
 }
 
 export async function fetchWomenProductById(productId) {
@@ -33,7 +71,8 @@ export async function fetchWomenProductById(productId) {
     if (!response.ok) {
         throw new Error("Unable to fetch women product details");
     }
-    return response.json();
+    const data = await response.json();
+    return normalizeProductImages(data);
 }
 
 export async function fetchKidsProducts() {
@@ -41,7 +80,8 @@ export async function fetchKidsProducts() {
     if (!response.ok) {
         throw new Error("Unable to fetch kids products");
     }
-    return response.json();
+    const data = await response.json();
+    return normalizeProductList(data);
 }
 
 export async function fetchKidsProductById(productId) {
@@ -49,7 +89,8 @@ export async function fetchKidsProductById(productId) {
     if (!response.ok) {
         throw new Error("Unable to fetch kids product details");
     }
-    return response.json();
+    const data = await response.json();
+    return normalizeProductImages(data);
 }
 
 export async function createWhatsappOrderLink(payload) {
