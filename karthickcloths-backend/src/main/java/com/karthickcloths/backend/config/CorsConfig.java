@@ -20,21 +20,21 @@ public class CorsConfig {
         return new WebMvcConfigurer() {
             @Override
             public void addCorsMappings(CorsRegistry registry) {
-            String[] defaultOrigins = new String[] {
-                "http://localhost:5173",
-                "http://localhost:5174",
-                "https://ktshirts.vercel.app",
-                "https://*.vercel.app"
-            };
+                String[] defaultOrigins = new String[]{
+                    "http://localhost:5173",
+                    "http://localhost:5174",
+                    "https://ktshirts.vercel.app",
+                    "https://*.vercel.app"
+                };
 
-            String[] origins = Stream.concat(
-                    Arrays.stream(defaultOrigins),
-                    Arrays.stream(allowedOrigins.split(","))
+                String[] origins = Stream.concat(
+                        Arrays.stream(defaultOrigins),
+                        Arrays.stream(allowedOrigins.split(","))
                 )
                         .map(String::trim)
-                .map(origin -> origin.replace("\"", ""))
+                        .map(origin -> origin.replace("\"", ""))
                         .filter(origin -> !origin.isEmpty())
-                .distinct()
+                        .distinct()
                         .toArray(String[]::new);
 
                 registry.addMapping("/api/**")
