@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
 const Login = () => {
     const navigate = useNavigate();
+    const location = useLocation();
     const { login, loading, error: authError } = useAuth();
     const [formData, setFormData] = useState({
         email: '',
@@ -31,8 +32,12 @@ const Login = () => {
         }
 
         try {
-            await login(formData.email, formData.password);
-            navigate('/men');
+            const userData = await login(formData.email, formData.password);
+            const fromPath = location.state?.from?.pathname;
+            const targetPath = fromPath && fromPath !== '/login'
+                ? fromPath
+                : ((userData?.admin || userData?.isAdmin) ? '/admin' : '/');
+            navigate(targetPath, { replace: true });
         } catch (err) {
             setError(err.message || 'Login failed');
         }

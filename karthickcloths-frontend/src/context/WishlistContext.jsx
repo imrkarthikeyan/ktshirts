@@ -11,22 +11,22 @@ const getItemKey = (itemOrId, category = "general") => {
 };
 
 export const WishlistProvider = ({ children }) => {
-    const [wishlistItems, setWishlistItems] = useState([]);
-
-    useEffect(() => {
+    const [wishlistItems, setWishlistItems] = useState(() => {
         try {
             const raw = localStorage.getItem(WISHLIST_STORAGE_KEY);
             if (!raw) {
-                return;
+                return [];
             }
             const parsed = JSON.parse(raw);
             if (Array.isArray(parsed)) {
-                setWishlistItems(parsed);
+                return parsed;
             }
+            return [];
         } catch (error) {
             console.error("Failed to parse wishlist from storage:", error);
+            return [];
         }
-    }, []);
+    });
 
     useEffect(() => {
         localStorage.setItem(WISHLIST_STORAGE_KEY, JSON.stringify(wishlistItems));

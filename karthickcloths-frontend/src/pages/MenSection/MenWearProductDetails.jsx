@@ -1,15 +1,24 @@
 import { useEffect, useMemo, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
-import { createWhatsappOrderLink, fetchMenProductById } from "../../services/api";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
+import { createWhatsappOrderLink } from "../../services/api";
 import { menProductsFallback } from "./menProductsData";
 import { useAuth } from "../../context/AuthContext";
 import { useCart } from "../../context/CartContext";
 import { useWishlist } from "../../context/WishlistContext";
+import { getCatalogProductById } from "../../services/catalogStore";
 
-function MenWearProductDetails({ isDark }) {
+function MenWearProductDetails({
+    isDark,
+    categoryKey = "men",
+    routeBase = "/men",
+    pageLabel = "Men Wear",
+    whatsappPhone = "8667015665",
+    fallbackProducts = menProductsFallback,
+}) {
     const { prod_id } = useParams();
     const productId = Number(prod_id);
     const navigate = useNavigate();
+    const location = useLocation();
     const { isAuthenticated } = useAuth();
     const { addToCart } = useCart();
     const { toggleWishlist, isWishlisted } = useWishlist();
@@ -25,30 +34,19 @@ function MenWearProductDetails({ isDark }) {
     const [notification, setNotification] = useState(null);
 
     useEffect(() => {
-        let isMounted = true;
-
-        const loadProduct = async () => {
-            try {
-                const data = await fetchMenProductById(productId);
-                if (isMounted) {
-                    setProduct(data);
-                    setSelectedColor(data.defaultColor || data.availableColors?.[0] || "Black");
-                }
-            } catch (error) {
-                const fallbackProduct = menProductsFallback.find((item) => item.id === productId);
-                if (isMounted) {
-                    setProduct(fallbackProduct || null);
-                    setSelectedColor(fallbackProduct?.defaultColor || fallbackProduct?.availableColors?.[0] || "Black");
-                }
-            }
+        const loadProduct = () => {
+            const fallbackProduct = getCatalogProductById(categoryKey, productId) || fallbackProducts.find((item) => item.id === productId);
+            setProduct(fallbackProduct || null);
+            setSelectedColor(fallbackProduct?.defaultColor || fallbackProduct?.availableColors?.[0] || "Black");
         };
 
         loadProduct();
 
-        return () => {
-            isMounted = false;
-        };
-    }, [productId]);
+        const syncProduct = () => loadProduct();
+        window.addEventListener("kc-catalog-changed", syncProduct);
+
+        return () => window.removeEventListener("kc-catalog-changed", syncProduct);
+    }, [categoryKey, fallbackProducts, productId]);
 
     const images = useMemo(() => {
         if (!product?.images?.length) {
@@ -74,14 +72,14 @@ function MenWearProductDetails({ isDark }) {
             availableColors: product.availableColors,
             sleeve: product.sleeve,
             images: product.images,
-            category: "men",
-            route: `/men/${product.id}/details`,
+            category: categoryKey,
+            route: `${routeBase}/${product.id}/details`,
         });
     };
 
     const handleAddToCart = async () => {
         if (!isAuthenticated) {
-            navigate('/login');
+            navigate('/login', { state: { from: location } });
             return;
         }
 
@@ -135,7 +133,7 @@ function MenWearProductDetails({ isDark }) {
             window.open(response.whatsappUrl, "_blank", "noopener,noreferrer");
         } catch (error) {
             const fallbackMessage = [
-                "Hello Karthick Cloths, I want to order:",
+                "Hello TRIAL BY TSHIRT, I want to order:",
                 `Product: ${product.name}`,
                 `Product ID: ${product.id}`,
                 `Color: ${selectedColor}`,
@@ -146,7 +144,7 @@ function MenWearProductDetails({ isDark }) {
                 "Please confirm availability and delivery.",
             ].join("\n");
 
-            const whatsappUrl = `https://wa.me/9025758149?text=${encodeURIComponent(fallbackMessage)}`;
+            const whatsappUrl = `https://wa.me/${whatsappPhone}?text=${encodeURIComponent(fallbackMessage)}`;
             window.open(whatsappUrl, "_blank", "noopener,noreferrer");
         } finally {
             setIsSubmitting(false);
@@ -158,10 +156,10 @@ function MenWearProductDetails({ isDark }) {
             <main className={isDark ? "min-h-screen bg-black px-4 py-12 text-zinc-100" : "min-h-screen bg-white px-4 py-12 text-zinc-900"}>
                 <div className="mx-auto max-w-6xl">
                     <button
-                        onClick={() => navigate("/men")}
+                        onClick={() => navigate(routeBase)}
                         className={isDark ? "rounded-full border border-zinc-700 px-4 py-2 text-sm text-zinc-200 hover:border-white" : "rounded-full border border-zinc-300 px-4 py-2 text-sm text-zinc-700 hover:border-black"}
                     >
-                        Back To Men Wear
+                        {`Back To ${pageLabel}`}
                     </button>
                     <p className="mt-8 text-lg">Loading product details...</p>
                 </div>
@@ -178,10 +176,10 @@ function MenWearProductDetails({ isDark }) {
             )}
             <section className="mx-auto max-w-7xl px-4 pb-12 pt-6 md:pt-10">
                 <button
-                    onClick={() => navigate("/men")}
+                    onClick={() => navigate(routeBase)}
                     className={isDark ? "fade-up rounded-full border border-zinc-700 px-4 py-2 text-sm font-medium text-zinc-200 transition hover:border-white hover:text-white" : "fade-up rounded-full border border-zinc-300 px-4 py-2 text-sm font-medium text-zinc-700 transition hover:border-black hover:text-black"}
                 >
-                    Back To Men Wear
+                    {`Back To ${pageLabel}`}
                 </button>
 
                 <div className="mt-6 grid gap-8 md:grid-cols-2 xl:grid-cols-[1.1fr_1fr]">

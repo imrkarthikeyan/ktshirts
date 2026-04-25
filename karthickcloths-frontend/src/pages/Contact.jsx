@@ -50,8 +50,9 @@ function Contact({ isDark }) {
                         <div className={isDark ? "rounded-3xl border border-zinc-800 bg-zinc-900 p-6" : "rounded-3xl border border-zinc-200 bg-white p-6"}>
                             <h2 className="text-lg font-bold">Contact Details</h2>
                             <div className={isDark ? "mt-4 space-y-3 text-sm text-zinc-300" : "mt-4 space-y-3 text-sm text-zinc-600"}>
-                                <p><span className="font-semibold text-cyan-500">Email:</span> support@karthickcloths.com</p>
-                                <p><span className="font-semibold text-cyan-500">Phone:</span> +91 98765 43210</p>
+                                <p><span className="font-semibold text-cyan-500">Email:</span> support@trailbytshirt.com</p>
+                                <p><span className="font-semibold text-cyan-500">Phone:</span> +91 8667015665</p>
+                                <p><span className="font-semibold text-cyan-500">WhatsApp:</span> +91 8667015665</p>
                                 <p><span className="font-semibold text-cyan-500">Hours:</span> Mon - Sat, 9:00 AM - 7:00 PM</p>
                                 <p><span className="font-semibold text-cyan-500">Address:</span> Chennai, Tamil Nadu, India</p>
                             </div>

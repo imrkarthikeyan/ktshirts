@@ -3,7 +3,9 @@ package com.karthickcloths.backend.service;
 import com.karthickcloths.backend.dto.CartItemRequest;
 import com.karthickcloths.backend.dto.CartItemResponse;
 import com.karthickcloths.backend.model.CartItem;
+import com.karthickcloths.backend.model.CustomTshirtRequest;
 import com.karthickcloths.backend.repository.CartItemRepository;
+import com.karthickcloths.backend.repository.CustomTshirtRequestRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -16,6 +18,9 @@ public class CartService {
 
     @Autowired
     private CartItemRepository cartItemRepository;
+
+    @Autowired
+    private CustomTshirtRequestRepository customTshirtRequestRepository;
 
     public CartItemResponse addToCart(Long userId, CartItemRequest cartItemRequest) throws Exception {
         // Check if item with same product, color, and size already exists
@@ -32,6 +37,12 @@ public class CartService {
             // Update quantity if item already exists
             cartItem = existingItem.get();
             cartItem.setQuantity(cartItem.getQuantity() + cartItemRequest.getQuantity());
+            cartItem.setProductName(cartItemRequest.getProductName());
+            cartItem.setBrand(cartItemRequest.getBrand());
+            cartItem.setUnitPrice(cartItemRequest.getUnitPrice());
+            cartItem.setSelectedColor(cartItemRequest.getSelectedColor());
+            cartItem.setSelectedSize(cartItemRequest.getSelectedSize());
+            cartItem.setProductImage(cartItemRequest.getProductImage());
         } else {
             // Create new cart item
             cartItem = new CartItem();
@@ -102,8 +113,22 @@ public class CartService {
         response.setQuantity(cartItem.getQuantity());
         response.setSelectedColor(cartItem.getSelectedColor());
         response.setSelectedSize(cartItem.getSelectedSize());
-        response.setProductImage(cartItem.getProductImage());
+        response.setProductImage(resolveProductImage(cartItem));
         response.setTotalPrice(cartItem.getUnitPrice() * cartItem.getQuantity());
         return response;
+    }
+
+    private String resolveProductImage(CartItem cartItem) {
+        String productName = cartItem.getProductName();
+        if (productName != null && productName.startsWith("Custom Edition -")) {
+            Optional<CustomTshirtRequest> requestOpt = customTshirtRequestRepository.findById(cartItem.getProductId());
+            if (requestOpt.isPresent()) {
+                String previewUrl = requestOpt.get().getDesignPreviewUrl();
+                if (previewUrl != null && !previewUrl.isBlank()) {
+                    return previewUrl.trim();
+                }
+            }
+        }
+        return cartItem.getProductImage();
     }
 }

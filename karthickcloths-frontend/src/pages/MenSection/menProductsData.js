@@ -24,7 +24,7 @@ export const menProductsFallback = [
     {
         id: 2,
         name: "Urban Minimal Crew Neck T-Shirt",
-        brand: "KTshirts",
+        brand: "TRIAL BY TSHIRT",
         originalPrice: 999,
         offerPrice: 399,
         discountPercent: 60,
@@ -46,7 +46,7 @@ export const menProductsFallback = [
     {
         id: 3,
         name: "Classic Drop Shoulder Oversized Tee",
-        brand: "KTshirts",
+        brand: "TRIAL BY TSHIRT",
         originalPrice: 1199,
         offerPrice: 499,
         discountPercent: 58,
@@ -69,7 +69,7 @@ export const menProductsFallback = [
     {
         id: 4,
         name: "Classic Drop Shoulder Oversized Tee",
-        brand: "KTshirts",
+        brand: "TRIAL BY TSHIRT",
         originalPrice: 1199,
         offerPrice: 499,
         discountPercent: 58,
@@ -92,7 +92,7 @@ export const menProductsFallback = [
     {
         id: 5,
         name: "Classic Drop Shoulder Oversized Tee",
-        brand: "KTshirts",
+        brand: "TRIAL BY TSHIRT",
         originalPrice: 1199,
         offerPrice: 499,
         discountPercent: 58,
@@ -115,7 +115,7 @@ export const menProductsFallback = [
     {
         id: 6,
         name: "Slim Fit Oxford Casual Shirt",
-        brand: "KTshirts",
+        brand: "TRIAL BY TSHIRT",
         originalPrice: 1299,
         offerPrice: 599,
         discountPercent: 54,
@@ -159,7 +159,7 @@ export const menProductsFallback = [
     {
         id: 8,
         name: "Relaxed Fit Linen Blend Shirt",
-        brand: "KTshirts",
+        brand: "TRIAL BY TSHIRT",
         originalPrice: 1499,
         offerPrice: 699,
         discountPercent: 53,
@@ -181,7 +181,7 @@ export const menProductsFallback = [
     {
         id: 9,
         name: "Graphic Print Crew Neck Tee",
-        brand: "KTshirts",
+        brand: "TRIAL BY TSHIRT",
         originalPrice: 899,
         offerPrice: 399,
         discountPercent: 56,
@@ -225,7 +225,7 @@ export const menProductsFallback = [
     {
         id: 11,
         name: "Regular Fit Striped Shirt",
-        brand: "KTshirts",
+        brand: "TRIAL BY TSHIRT",
         originalPrice: 1199,
         offerPrice: 579,
         discountPercent: 52,
@@ -269,7 +269,7 @@ export const menProductsFallback = [
     {
         id: 13,
         name: "Solid Henley Neck T-Shirt",
-        brand: "KTshirts",
+        brand: "TRIAL BY TSHIRT",
         originalPrice: 1099,
         offerPrice: 499,
         discountPercent: 55,
@@ -313,7 +313,7 @@ export const menProductsFallback = [
     {
         id: 15,
         name: "Checked Casual Overshirt",
-        brand: "KTshirts",
+        brand: "TRIAL BY TSHIRT",
         originalPrice: 1699,
         offerPrice: 799,
         discountPercent: 52,
@@ -357,7 +357,7 @@ export const menProductsFallback = [
     {
         id: 17,
         name: "Minimal Zip-Up Jacket",
-        brand: "KTshirts",
+        brand: "TRIAL BY TSHIRT",
         originalPrice: 1999,
         offerPrice: 949,
         discountPercent: 53,
@@ -377,3 +377,4 @@ export const menProductsFallback = [
         ],
     },
 ];
+

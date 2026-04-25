@@ -12,6 +12,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 public class User {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -33,6 +34,9 @@ public class User {
 
     @Column(nullable = false)
     private String pincode;
+
+    @Column(nullable = false)
+    private boolean admin;
 
     @Column(name = "created_at")
     private LocalDateTime createdAt;

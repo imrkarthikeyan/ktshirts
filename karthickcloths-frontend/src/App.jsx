@@ -17,6 +17,14 @@ import Contact from "./pages/Contact";
 import Search from "./pages/Search";
 import Wishlist from "./pages/Wishlist";
 import Footer from "./components/Footer";
+import AdminDashboard from "./pages/Admin/AdminDashboard";
+import CustomEditionOrders from "./pages/Admin/CustomEditionOrders";
+import ConstitutionalEdition from "./pages/ConstitutionalEdition/ConstitutionalEdition";
+import ConstitutionalEditionProductDetails from "./pages/ConstitutionalEdition/ConstitutionalEditionProductDetails";
+import CustomEdition from "./pages/CustomEdition";
+import CustomEditionSuccess from "./pages/CustomEditionSuccess";
+import CustomEditionTracking from "./pages/CustomEditionTracking";
+import StoreLocator from "./pages/StoreLocator";
 
 function App() {
     const [isDark, setIsDark] = useState(() => {
@@ -69,7 +77,39 @@ function App() {
                     element={<KidsWear isDark={isDark} onSelectProduct={(productId) => navigate(`/kids/${productId}/details`)} />}
                 />
                 <Route path="/kids/:prod_id/details" element={<KidsWearProductDetails isDark={isDark} />} />
+                <Route
+                    path="/constitutional-edition"
+                    element={<ConstitutionalEdition isDark={isDark} onSelectProduct={(productId) => navigate(`/constitutional-edition/${productId}/details`)} />}
+                />
+                <Route path="/constitutional-edition/:prod_id/details" element={<ConstitutionalEditionProductDetails isDark={isDark} />} />
+                <Route
+                    path="/custom-edition"
+                    element={
+                        <ProtectedRoute>
+                            <CustomEdition isDark={isDark} />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route path="/custom-edition/success/:orderId" element={<CustomEditionSuccess isDark={isDark} />} />
+                <Route path="/custom-edition/track" element={<CustomEditionTracking isDark={isDark} />} />
+                <Route path="/store-locator" element={<StoreLocator isDark={isDark} />} />
                 <Route path="/search" element={<Search isDark={isDark} />} />
+                <Route
+                    path="/admin"
+                    element={
+                        <ProtectedRoute requireAdmin>
+                            <AdminDashboard isDark={isDark} />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/admin/custom-edition"
+                    element={
+                        <ProtectedRoute requireAdmin>
+                            <CustomEditionOrders isDark={isDark} />
+                        </ProtectedRoute>
+                    }
+                />
                 <Route
                     path="/cart"
                     element={

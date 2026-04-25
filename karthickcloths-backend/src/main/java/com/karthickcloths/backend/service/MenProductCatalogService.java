@@ -38,7 +38,7 @@ public class MenProductCatalogService {
             new MenProduct(
                     2L,
                     "Urban Minimal Crew Neck T-Shirt",
-                    "KTshirts",
+                    "TRIAL BY TSHIRT",
                     "Soft bio-washed cotton t-shirt with minimalist styling and smooth finish.",
                     999,
                     399,
@@ -64,7 +64,7 @@ public class MenProductCatalogService {
             new MenProduct(
                     3L,
                     "Classic Drop Shoulder Oversized Tee",
-                    "KTshirts",
+                    "TRIAL BY TSHIRT",
                     "Oversized drop-shoulder t-shirt with breathable knit and modern streetwear cut.",
                     1199,
                     499,
@@ -100,3 +100,4 @@ public class MenProductCatalogService {
                 .orElseThrow(() -> new IllegalArgumentException("Product not found: " + id));
     }
 }
+

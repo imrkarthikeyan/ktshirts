@@ -239,6 +239,26 @@ const Profile = ({ isDark }) => {
                     </button>
                 </div>
 
+                {(user?.admin || user?.isAdmin) ? (
+                    <div className={isDark ? "mt-8 bg-gray-900 border border-gray-800 rounded-lg p-6" : "mt-8 bg-white border border-zinc-200 rounded-lg p-6"}>
+                        <h3 className={isDark ? "text-white font-bold mb-4" : "text-zinc-900 font-bold mb-4"}>Admin Tools</h3>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <button
+                                onClick={() => navigate('/admin')}
+                                className={isDark ? "px-6 py-3 bg-gray-800 text-white font-bold rounded-lg border border-gray-700 hover:border-white transition-all" : "px-6 py-3 bg-zinc-100 text-zinc-900 font-bold rounded-lg border border-zinc-300 hover:bg-zinc-200 transition-all"}
+                            >
+                                Admin Dashboard
+                            </button>
+                            <button
+                                onClick={() => navigate('/admin/custom-edition')}
+                                className={isDark ? "px-6 py-3 bg-cyan-600 text-white font-bold rounded-lg border border-cyan-500 hover:bg-cyan-500 transition-all" : "px-6 py-3 bg-cyan-500 text-white font-bold rounded-lg border border-cyan-400 hover:bg-cyan-600 transition-all"}
+                            >
+                                Handle Custom Edition Requests
+                            </button>
+                        </div>
+                    </div>
+                ) : null}
+
                 {/* Account Info */}
                 <div className={isDark ? "mt-8 bg-gray-900 border border-gray-800 rounded-lg p-6" : "mt-8 bg-white border border-zinc-200 rounded-lg p-6"}>
                     <h3 className={isDark ? "text-white font-bold mb-4" : "text-zinc-900 font-bold mb-4"}>Account Information</h3>

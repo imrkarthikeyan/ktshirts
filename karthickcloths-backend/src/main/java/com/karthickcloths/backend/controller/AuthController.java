@@ -3,6 +3,7 @@ package com.karthickcloths.backend.controller;
 import com.karthickcloths.backend.dto.LoginRequest;
 import com.karthickcloths.backend.dto.LoginResponse;
 import com.karthickcloths.backend.dto.SignupRequest;
+import com.karthickcloths.backend.dto.VerifyOtpSignupRequest;
 import com.karthickcloths.backend.model.User;
 import com.karthickcloths.backend.service.AuthService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -23,6 +24,26 @@ public class AuthController {
     public ResponseEntity<?> signup(@RequestBody SignupRequest signupRequest) {
         try {
             String message = authService.signup(signupRequest);
+            return ResponseEntity.ok(new ApiResponse(true, message));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(new ApiResponse(false, e.getMessage()));
+        }
+    }
+
+    @PostMapping("/signup/request-otp")
+    public ResponseEntity<?> requestSignupOtp(@RequestBody SignupRequest signupRequest) {
+        try {
+            String message = authService.requestSignupOtp(signupRequest);
+            return ResponseEntity.ok(new ApiResponse(true, message));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(new ApiResponse(false, e.getMessage()));
+        }
+    }
+
+    @PostMapping("/signup/verify-otp")
+    public ResponseEntity<?> verifySignupOtp(@RequestBody VerifyOtpSignupRequest verifyRequest) {
+        try {
+            String message = authService.verifySignupOtp(verifyRequest.getEmail(), verifyRequest.getOtp());
             return ResponseEntity.ok(new ApiResponse(true, message));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(new ApiResponse(false, e.getMessage()));

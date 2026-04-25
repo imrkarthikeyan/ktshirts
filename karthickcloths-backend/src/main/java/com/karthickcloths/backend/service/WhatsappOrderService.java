@@ -10,12 +10,12 @@ import java.nio.charset.StandardCharsets;
 @Service
 public class WhatsappOrderService {
 
-    private static final String DELIVERY_PHONE = "9025758149";
+    private static final String DELIVERY_PHONE = "8667015665";
 
     public WhatsappOrderResponse createWhatsappOrder(OrderRequest request) {
         int total = request.unitPrice() * request.quantity();
 
-        String message = "Hello Karthick Cloths, I want to order:\n"
+        String message = "Hello TRIAL BY TSHIRT, I want to order:\n"
                 + "Product: " + request.productName() + "\n"
                 + "Product ID: " + request.productId() + "\n"
                 + "Color: " + request.color() + "\n"

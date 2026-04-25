@@ -16,4 +16,5 @@ public class LoginResponse {
     private String address;
     private String pincode;
     private Long userId;
+    private boolean admin;
 }

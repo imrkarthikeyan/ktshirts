@@ -1,9 +1,9 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { fetchWomenProducts } from "../../services/api";
 import { womenProductsFallback } from "./womenProductsData";
 import { useAuth } from "../../context/AuthContext";
 import { useWishlist } from "../../context/WishlistContext";
+import { getCatalogProducts } from "../../services/catalogStore";
 
 const priceRanges = [
     { label: "Under ₹400", min: 0, max: 400 },
@@ -11,20 +11,6 @@ const priceRanges = [
     { label: "₹501 - ₹700", min: 501, max: 700 },
     { label: "₹701+", min: 701, max: Infinity },
 ];
-
-const mergeProducts = (apiProducts = []) => {
-    const productsById = new Map();
-
-    apiProducts.forEach((product) => {
-        productsById.set(product.id, product);
-    });
-
-    womenProductsFallback.forEach((product) => {
-        productsById.set(product.id, product);
-    });
-
-    return Array.from(productsById.values());
-};
 
 function WomenWear({ isDark, onSelectProduct }) {
     const navigate = useNavigate();
@@ -69,26 +55,16 @@ function WomenWear({ isDark, onSelectProduct }) {
     }, [isMobileFilterOpen]);
 
     useEffect(() => {
-        let isMounted = true;
-
-        const loadProducts = async () => {
-            try {
-                const data = await fetchWomenProducts();
-                if (isMounted) {
-                    setProducts(mergeProducts(data));
-                }
-            } catch (error) {
-                if (isMounted) {
-                    setProducts(womenProductsFallback);
-                }
-            }
+        const loadProducts = () => {
+            setProducts(getCatalogProducts("women") || womenProductsFallback);
         };
 
         loadProducts();
 
-        return () => {
-            isMounted = false;
-        };
+        const syncProducts = () => setProducts(getCatalogProducts("women") || womenProductsFallback);
+        window.addEventListener("kc-catalog-changed", syncProducts);
+
+        return () => window.removeEventListener("kc-catalog-changed", syncProducts);
     }, []);
 
     const brands = useMemo(() => [...new Set(products.map((item) => item.brand))], [products]);

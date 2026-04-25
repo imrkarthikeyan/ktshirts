@@ -10,7 +10,7 @@ function Footer({ isDark }) {
             <div className={isDark ? "mx-auto w-[96%] max-w-[1320px] text-zinc-300" : "mx-auto w-[96%] max-w-[1320px] text-zinc-700"}>
                 <div className="grid gap-5 sm:gap-6 md:grid-cols-2 md:gap-8 xl:grid-cols-4">
                     <div className={sectionCardClass}>
-                        <p className="text-[12px] font-semibold uppercase tracking-[0.28em] opacity-70">Karthick Cloths</p>
+                        <p className="text-[12px] font-semibold uppercase tracking-[0.28em] opacity-70">TRIAL BY TSHIRT</p>
                         <p className="mt-3 max-w-xs text-sm leading-6 md:text-[16px] md:leading-7">
                             Everyday essentials and elevated fashion for men, women, and kids. Designed for comfort, crafted for style.
                         </p>
@@ -52,13 +52,13 @@ function Footer({ isDark }) {
                         <h3 className="text-sm font-bold uppercase tracking-[0.2em]">Contact Details</h3>
                         <ul className="mt-3 space-y-2 text-sm leading-6">
                             <li>
-                                <span className="font-semibold">Phone:</span> +91 98765 43210
+                                <span className="font-semibold">Phone:</span> +91 8667015665
                             </li>
                             <li>
-                                <span className="font-semibold">WhatsApp:</span> +91 98765 43210
+                                <span className="font-semibold">WhatsApp:</span> +91 8667015665
                             </li>
                             <li>
-                                <span className="font-semibold">Email:</span> support@karthickcloths.in
+                                <span className="font-semibold">Email:</span> support@trailbytshirt.com
                             </li>
                             <li>
                                 <span className="font-semibold">Working Hours:</span> Mon-Sat, 9:30 AM to 8:30 PM
@@ -68,7 +68,7 @@ function Footer({ isDark }) {
                 </div>
 
                 <div className={isDark ? "mt-8 flex flex-col items-center gap-3 border-t border-zinc-800 pt-5 text-center text-xs text-zinc-400 md:mt-10 md:flex-row md:justify-between md:text-left" : "mt-8 flex flex-col items-center gap-3 border-t border-zinc-300 pt-5 text-center text-xs text-zinc-500 md:mt-10 md:flex-row md:justify-between md:text-left"}>
-                    <p className="leading-5">2026 Ktshirts. All rights reserved.</p>
+                    <p className="leading-5">2026 TRIAL BY TSHIRT. All rights reserved.</p>
                     <div className="flex flex-wrap items-center justify-center gap-3 md:justify-end md:gap-4">
                         <a href="#" className="transition hover:underline">Privacy Policy</a>
                         <a href="#" className="transition hover:underline">Terms & Conditions</a>

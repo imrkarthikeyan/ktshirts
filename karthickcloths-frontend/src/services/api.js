@@ -1,6 +1,7 @@
-const API_BASE_URL =
-    import.meta.env.VITE_API_BASE_URL ||
-    (import.meta.env.DEV ? "http://localhost:8080/api" : "https://ktshirts.onrender.com/api");
+// const API_BASE_URL =
+//     import.meta.env.VITE_API_BASE_URL ||
+//     (import.meta.env.DEV ? "http://localhost:8080/api" : "https://trailbytshirt.onrender.com/api");
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:8080/api";
 
 export { API_BASE_URL };
 
@@ -108,3 +109,165 @@ export async function createWhatsappOrderLink(payload) {
 
     return response.json();
 }
+
+export async function requestSignupOtp(signupData) {
+    const response = await fetch(`${API_BASE_URL}/auth/signup/request-otp`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify(signupData),
+    });
+
+    const data = await response.json();
+    if (!response.ok) {
+        throw new Error(data.message || "Failed to send OTP");
+    }
+    return data;
+}
+
+export async function verifySignupOtp(email, otp) {
+    const response = await fetch(`${API_BASE_URL}/auth/signup/verify-otp`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email, otp }),
+    });
+
+    const data = await response.json();
+    if (!response.ok) {
+        throw new Error(data.message || "OTP verification failed");
+    }
+    return data;
+}
+
+const getAuthHeaders = (token) => ({
+    "Content-Type": "application/json",
+    Authorization: `Bearer ${token}`,
+});
+
+export async function createCustomEditionRequest(payload, token) {
+    const response = await fetch(`${API_BASE_URL}/custom-edition/requests`, {
+        method: "POST",
+        headers: getAuthHeaders(token),
+        body: JSON.stringify(payload),
+    });
+
+    const data = await response.json();
+    if (!response.ok) {
+        throw new Error(data.message || "Unable to submit custom request");
+    }
+    return data;
+}
+
+export async function trackCustomEditionRequest({ orderId, email }) {
+    const query = new URLSearchParams();
+    if (orderId) {
+        query.set("orderId", orderId);
+    }
+    if (email) {
+        query.set("email", email);
+    }
+
+    const response = await fetch(`${API_BASE_URL}/custom-edition/tracking?${query.toString()}`);
+    const data = await response.json();
+
+    if (!response.ok) {
+        throw new Error(data.message || "Unable to track custom request");
+    }
+
+    return data;
+}
+
+export async function fetchMyCustomEditionRequests(token) {
+    const response = await fetch(`${API_BASE_URL}/custom-edition/requests/mine`, {
+        headers: {
+            Authorization: `Bearer ${token}`,
+        },
+    });
+
+    const data = await response.json();
+    if (!response.ok) {
+        throw new Error(data.message || "Unable to fetch your requests");
+    }
+    return data;
+}
+
+export async function fetchAdminCustomEditionRequests(token, status) {
+    const query = status ? `?status=${encodeURIComponent(status)}` : "";
+    const response = await fetch(`${API_BASE_URL}/custom-edition/requests/admin${query}`, {
+        headers: {
+            Authorization: `Bearer ${token}`,
+        },
+    });
+
+    const data = await response.json();
+    if (!response.ok) {
+        throw new Error(data.message || "Unable to fetch admin requests");
+    }
+    return data;
+}
+
+export async function respondToCustomEditionRequest(requestId, payload, token) {
+    const response = await fetch(`${API_BASE_URL}/custom-edition/requests/${requestId}/respond`, {
+        method: "PUT",
+        headers: getAuthHeaders(token),
+        body: JSON.stringify(payload),
+    });
+
+    const data = await response.json();
+    if (!response.ok) {
+        throw new Error(data.message || "Unable to send admin response");
+    }
+    return data;
+}
+
+export async function convertCustomEditionToCart(orderId, token) {
+    const response = await fetch(`${API_BASE_URL}/custom-edition/requests/${orderId}/checkout`, {
+        method: "POST",
+        headers: {
+            Authorization: `Bearer ${token}`,
+        },
+    });
+
+    const data = await response.json();
+    if (!response.ok) {
+        throw new Error(data.message || "Unable to convert request to cart");
+    }
+
+    return data;
+}
+
+export async function confirmCustomEditionRequest(orderId, token) {
+    const response = await fetch(`${API_BASE_URL}/custom-edition/requests/${orderId}/confirm`, {
+        method: "POST",
+        headers: {
+            Authorization: `Bearer ${token}`,
+        },
+    });
+
+    const data = await response.json();
+    if (!response.ok) {
+        throw new Error(data.message || "Unable to confirm custom request");
+    }
+
+    return data;
+}
+
+export async function cancelCustomEditionRequest(orderId, token) {
+    const response = await fetch(`${API_BASE_URL}/custom-edition/requests/${orderId}/cancel`, {
+        method: "POST",
+        headers: {
+            Authorization: `Bearer ${token}`,
+        },
+    });
+
+    const data = await response.json();
+    if (!response.ok) {
+        throw new Error(data.message || "Unable to cancel custom request");
+    }
+
+    return data;
+}
+

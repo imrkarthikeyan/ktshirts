@@ -1,31 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { fetchMenProducts, fetchWomenProducts, fetchKidsProducts } from "../services/api";
-import { menProductsFallback } from "./MenSection/menProductsData";
-import { womenProductsFallback } from "./WomenSection/womenProductsData";
-import { kidsProductsFallback } from "./KidsSection/kidsProductsData";
-
-const mergeProducts = (apiProducts = [], fallbackProducts = [], category, routeBuilder) => {
-    const productsById = new Map();
-
-    apiProducts.forEach((product) => {
-        productsById.set(product.id, {
-            ...product,
-            category,
-            route: routeBuilder(product.id),
-        });
-    });
-
-    fallbackProducts.forEach((product) => {
-        productsById.set(product.id, {
-            ...product,
-            category,
-            route: routeBuilder(product.id),
-        });
-    });
-
-    return Array.from(productsById.values());
-};
+import { getAllCatalogProducts } from "../services/catalogStore";
 
 function Search({ isDark }) {
     const navigate = useNavigate();
@@ -35,43 +10,17 @@ function Search({ isDark }) {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        let isMounted = true;
-
-        const loadProducts = async () => {
-            try {
-                const [menProducts, womenProducts, kidsProducts] = await Promise.all([
-                    fetchMenProducts(),
-                    fetchWomenProducts(),
-                    fetchKidsProducts(),
-                ]);
-
-                if (isMounted) {
-                    setProducts([
-                        ...mergeProducts(menProducts, menProductsFallback, "men", (productId) => `/men/${productId}/details`),
-                        ...mergeProducts(womenProducts, womenProductsFallback, "women", (productId) => `/women/${productId}/details`),
-                        ...mergeProducts(kidsProducts, kidsProductsFallback, "kids", (productId) => `/kids/${productId}/details`),
-                    ]);
-                }
-            } catch (error) {
-                if (isMounted) {
-                    setProducts([
-                        ...mergeProducts([], menProductsFallback, "men", (productId) => `/men/${productId}/details`),
-                        ...mergeProducts([], womenProductsFallback, "women", (productId) => `/women/${productId}/details`),
-                        ...mergeProducts([], kidsProductsFallback, "kids", (productId) => `/kids/${productId}/details`),
-                    ]);
-                }
-            } finally {
-                if (isMounted) {
-                    setLoading(false);
-                }
-            }
+        const loadProducts = () => {
+            setProducts(getAllCatalogProducts());
+            setLoading(false);
         };
 
         loadProducts();
 
-        return () => {
-            isMounted = false;
-        };
+        const syncProducts = () => setProducts(getAllCatalogProducts());
+        window.addEventListener("kc-catalog-changed", syncProducts);
+
+        return () => window.removeEventListener("kc-catalog-changed", syncProducts);
     }, []);
 
     useEffect(() => {

@@ -1,5 +1,5 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
-import { API_BASE_URL } from '../services/api';
+import { API_BASE_URL, requestSignupOtp as requestOtpApi, verifySignupOtp as verifyOtpApi } from '../services/api';
 
 const AuthContext = createContext();
 
@@ -20,23 +20,28 @@ export const AuthProvider = ({ children }) => {
     }, []);
 
     const signup = async (signupData) => {
+        return requestSignupOtp(signupData);
+    };
+
+    const requestSignupOtp = async (signupData) => {
         setLoading(true);
         setError(null);
         try {
-            const response = await fetch(`${API_BASE_URL}/auth/signup`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(signupData),
-            });
+            const data = await requestOtpApi(signupData);
+            return data;
+        } catch (err) {
+            setError(err.message);
+            throw err;
+        } finally {
+            setLoading(false);
+        }
+    };
 
-            const data = await response.json();
-
-            if (!response.ok) {
-                throw new Error(data.message || 'Signup failed');
-            }
-
+    const verifySignupOtp = async (email, otp) => {
+        setLoading(true);
+        setError(null);
+        try {
+            const data = await verifyOtpApi(email, otp);
             return data;
         } catch (err) {
             setError(err.message);
@@ -126,6 +131,8 @@ export const AuthProvider = ({ children }) => {
             loading,
             error,
             signup,
+            requestSignupOtp,
+            verifySignupOtp,
             login,
             logout,
             updateProfile,

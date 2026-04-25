@@ -6,14 +6,24 @@ import com.karthickcloths.backend.dto.SignupRequest;
 import com.karthickcloths.backend.model.User;
 import com.karthickcloths.backend.repository.UserRepository;
 import com.karthickcloths.backend.util.JwtUtil;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.mail.SimpleMailMessage;
+import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import java.time.LocalDateTime;
+import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Service
 public class AuthService {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(AuthService.class);
 
     @Autowired
     private UserRepository userRepository;
@@ -21,46 +31,92 @@ public class AuthService {
     @Autowired
     private JwtUtil jwtUtil;
 
+    @Autowired
+    private JavaMailSender mailSender;
+
+    @Value("${app.admin.email}")
+    private String adminEmail;
+
+    @Value("${app.mail.from:}")
+    private String fromEmail;
+
+    @Value("${spring.mail.username:}")
+    private String mailUsername;
+
+    @Value("${spring.mail.password:}")
+    private String mailPassword;
+
+    @Value("${app.otp.dev-fallback:true}")
+    private boolean allowDevOtpFallback;
+
     private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+    private final Map<String, PendingSignupOtp> pendingSignups = new ConcurrentHashMap<>();
 
     public String signup(SignupRequest signupRequest) throws Exception {
-        // Validate passwords match
-        if (!signupRequest.getPassword().equals(signupRequest.getConfirmPassword())) {
-            throw new Exception("Passwords do not match");
-        }
+        validateSignupFields(signupRequest);
 
-        // Check if email already exists
-        if (userRepository.existsByEmail(signupRequest.getEmail())) {
+        String normalizedEmail = signupRequest.getEmail().trim().toLowerCase();
+        if (userRepository.existsByEmail(normalizedEmail)) {
             throw new Exception("Email already registered");
         }
 
-        // Validate input fields
-        if (signupRequest.getEmail() == null || signupRequest.getEmail().isEmpty()) {
+        if (!normalizedEmail.equals(adminEmail.trim().toLowerCase())) {
+            throw new Exception("OTP verification required. Please request OTP first.");
+        }
+
+        createUser(signupRequest, true);
+        return "Admin registered successfully";
+    }
+
+    public String requestSignupOtp(SignupRequest signupRequest) throws Exception {
+        validateSignupFields(signupRequest);
+
+        String normalizedEmail = signupRequest.getEmail().trim().toLowerCase();
+        if (userRepository.existsByEmail(normalizedEmail)) {
+            throw new Exception("Email already registered");
+        }
+
+        if (normalizedEmail.equals(adminEmail.trim().toLowerCase())) {
+            createUser(signupRequest, true);
+            return "Admin registered successfully";
+        }
+
+        String otp = String.format("%06d", (int) (Math.random() * 1_000_000));
+        LocalDateTime expiresAt = LocalDateTime.now().plusMinutes(10);
+
+        pendingSignups.put(normalizedEmail, new PendingSignupOtp(signupRequest, otp, expiresAt));
+
+        return sendOtpEmail(normalizedEmail, otp);
+    }
+
+    public String verifySignupOtp(String email, String otp) throws Exception {
+        if (email == null || email.trim().isEmpty()) {
             throw new Exception("Email is required");
         }
-        if (signupRequest.getPassword() == null || signupRequest.getPassword().length() < 6) {
-            throw new Exception("Password must be at least 6 characters");
-        }
-        if (signupRequest.getPhoneNumber() == null || signupRequest.getPhoneNumber().isEmpty()) {
-            throw new Exception("Phone number is required");
-        }
-        if (signupRequest.getAddress() == null || signupRequest.getAddress().isEmpty()) {
-            throw new Exception("Address is required");
-        }
-        if (signupRequest.getPincode() == null || signupRequest.getPincode().isEmpty()) {
-            throw new Exception("Pincode is required");
+        if (otp == null || otp.trim().isEmpty()) {
+            throw new Exception("OTP is required");
         }
 
-        // Create new user
-        User user = new User();
-        user.setEmail(signupRequest.getEmail());
-        user.setPassword(passwordEncoder.encode(signupRequest.getPassword()));
-        user.setFullName(signupRequest.getFullName());
-        user.setPhoneNumber(signupRequest.getPhoneNumber());
-        user.setAddress(signupRequest.getAddress());
-        user.setPincode(signupRequest.getPincode());
+        String normalizedEmail = email.trim().toLowerCase();
+        PendingSignupOtp pending = pendingSignups.get(normalizedEmail);
 
-        User savedUser = userRepository.save(user);
+        if (pending == null) {
+            throw new Exception("No OTP request found for this email");
+        }
+        if (pending.expiresAt().isBefore(LocalDateTime.now())) {
+            pendingSignups.remove(normalizedEmail);
+            throw new Exception("OTP expired. Please request a new OTP");
+        }
+        if (!pending.otp().equals(otp.trim())) {
+            throw new Exception("Invalid OTP");
+        }
+        if (userRepository.existsByEmail(normalizedEmail)) {
+            pendingSignups.remove(normalizedEmail);
+            throw new Exception("Email already registered");
+        }
+
+        createUser(pending.signupRequest(), false);
+        pendingSignups.remove(normalizedEmail);
         return "User registered successfully";
     }
 
@@ -86,6 +142,7 @@ public class AuthService {
         response.setAddress(user.getAddress());
         response.setPincode(user.getPincode());
         response.setUserId(user.getId());
+        response.setAdmin(user.isAdmin());
 
         return response;
     }
@@ -112,5 +169,87 @@ public class AuthService {
         }
 
         return userRepository.save(user);
+    }
+
+    private void validateSignupFields(SignupRequest signupRequest) throws Exception {
+        if (signupRequest == null) {
+            throw new Exception("Signup data is required");
+        }
+        if (signupRequest.getEmail() == null || signupRequest.getEmail().isBlank()) {
+            throw new Exception("Email is required");
+        }
+        if (!signupRequest.getEmail().matches("^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$")) {
+            throw new Exception("Invalid email format");
+        }
+        if (signupRequest.getPassword() == null || signupRequest.getPassword().length() < 6) {
+            throw new Exception("Password must be at least 6 characters");
+        }
+        if (!signupRequest.getPassword().equals(signupRequest.getConfirmPassword())) {
+            throw new Exception("Passwords do not match");
+        }
+        if (signupRequest.getFullName() == null || signupRequest.getFullName().isBlank()) {
+            throw new Exception("Full name is required");
+        }
+        if (signupRequest.getPhoneNumber() == null || signupRequest.getPhoneNumber().isBlank()) {
+            throw new Exception("Phone number is required");
+        }
+        if (!signupRequest.getPhoneNumber().matches("^[0-9]{10}$")) {
+            throw new Exception("Phone number must be 10 digits");
+        }
+        if (signupRequest.getAddress() == null || signupRequest.getAddress().isBlank()) {
+            throw new Exception("Address is required");
+        }
+        if (signupRequest.getPincode() == null || signupRequest.getPincode().isBlank()) {
+            throw new Exception("Pincode is required");
+        }
+        if (!signupRequest.getPincode().matches("^[0-9]{6}$")) {
+            throw new Exception("Pincode must be 6 digits");
+        }
+    }
+
+    private void createUser(SignupRequest signupRequest, boolean isAdmin) {
+        User user = new User();
+        user.setEmail(signupRequest.getEmail().trim().toLowerCase());
+        user.setPassword(passwordEncoder.encode(signupRequest.getPassword()));
+        user.setFullName(signupRequest.getFullName().trim());
+        user.setPhoneNumber(signupRequest.getPhoneNumber().trim());
+        user.setAddress(signupRequest.getAddress().trim());
+        user.setPincode(signupRequest.getPincode().trim());
+        user.setAdmin(isAdmin);
+        userRepository.save(user);
+    }
+
+    private String sendOtpEmail(String email, String otp) throws Exception {
+        boolean mailConfigured = mailUsername != null && !mailUsername.isBlank() && mailPassword != null && !mailPassword.isBlank();
+
+        if (!mailConfigured) {
+            if (allowDevOtpFallback) {
+                LOGGER.warn("SMTP not configured. Using development OTP fallback for {}. OTP: {}", email, otp);
+                return "OTP email is not configured on server. Development OTP: " + otp;
+            }
+            throw new Exception("Unable to send OTP email. Configure SPRING_MAIL_PASSWORD with Gmail App Password for 8karthikeyanr@gmail.com.");
+        }
+
+        try {
+            SimpleMailMessage message = new SimpleMailMessage();
+            if (fromEmail != null && !fromEmail.isBlank()) {
+                message.setFrom(fromEmail);
+            }
+            message.setTo(email);
+            message.setSubject("TRIAL BY TSHIRT - Signup OTP");
+            message.setText("Your OTP for signup is: " + otp + "\n\nThis OTP is valid for 10 minutes.");
+            mailSender.send(message);
+            return "OTP sent to your email";
+        } catch (Exception ex) {
+            if (allowDevOtpFallback) {
+                LOGGER.warn("Email send failed. Using development OTP fallback for {}. OTP: {}", email, otp);
+                return "OTP email delivery failed. Development OTP: " + otp;
+            }
+            throw new Exception("Unable to send OTP email from 8karthikeyanr@gmail.com. Check Gmail App Password / SMTP access. Reason: " + ex.getMessage());
+        }
+    }
+
+    private record PendingSignupOtp(SignupRequest signupRequest, String otp, LocalDateTime expiresAt) {
+
     }
 }

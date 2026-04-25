@@ -2,7 +2,7 @@ export const kidsProductsFallback = [
     {
         id: 201,
         name: "Boys Cotton Checked Shirt",
-        brand: "KTshirts",
+        brand: "TRIAL BY TSHIRT",
         originalPrice: 899,
         offerPrice: 399,
         discountPercent: 56,
@@ -46,7 +46,7 @@ export const kidsProductsFallback = [
     {
         id: 203,
         name: "Kids Athleisure Co-ord Set",
-        brand: "KTshirts",
+        brand: "TRIAL BY TSHIRT",
         originalPrice: 999,
         offerPrice: 459,
         discountPercent: 54,
@@ -68,7 +68,7 @@ export const kidsProductsFallback = [
     {
         id: 204,
         name: "Boys Denim Dungaree Set",
-        brand: "KTshirts",
+        brand: "TRIAL BY TSHIRT",
         originalPrice: 1499,
         offerPrice: 749,
         discountPercent: 50,
@@ -110,3 +110,4 @@ export const kidsProductsFallback = [
         ],
     },
 ];
+

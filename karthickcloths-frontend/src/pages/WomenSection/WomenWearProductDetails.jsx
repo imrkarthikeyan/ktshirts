@@ -1,15 +1,17 @@
 import { useEffect, useMemo, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
-import { createWhatsappOrderLink, fetchWomenProductById } from "../../services/api";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
+import { createWhatsappOrderLink } from "../../services/api";
 import { womenProductsFallback } from "./womenProductsData";
 import { useAuth } from "../../context/AuthContext";
 import { useCart } from "../../context/CartContext";
 import { useWishlist } from "../../context/WishlistContext";
+import { getCatalogProductById } from "../../services/catalogStore";
 
 function WomenWearProductDetails({ isDark }) {
     const { prod_id } = useParams();
     const productId = Number(prod_id);
     const navigate = useNavigate();
+    const location = useLocation();
     const { isAuthenticated } = useAuth();
     const { addToCart } = useCart();
     const { toggleWishlist, isWishlisted } = useWishlist();
@@ -24,29 +26,18 @@ function WomenWearProductDetails({ isDark }) {
     const [notification, setNotification] = useState(null);
 
     useEffect(() => {
-        let isMounted = true;
-
-        const loadProduct = async () => {
-            try {
-                const data = await fetchWomenProductById(productId);
-                if (isMounted) {
-                    setProduct(data);
-                    setSelectedColor(data.defaultColor || data.availableColors?.[0] || "Black");
-                }
-            } catch (error) {
-                const fallbackProduct = womenProductsFallback.find((item) => item.id === productId);
-                if (isMounted) {
-                    setProduct(fallbackProduct || null);
-                    setSelectedColor(fallbackProduct?.defaultColor || fallbackProduct?.availableColors?.[0] || "Black");
-                }
-            }
+        const loadProduct = () => {
+            const fallbackProduct = getCatalogProductById("women", productId) || womenProductsFallback.find((item) => item.id === productId);
+            setProduct(fallbackProduct || null);
+            setSelectedColor(fallbackProduct?.defaultColor || fallbackProduct?.availableColors?.[0] || "Black");
         };
 
         loadProduct();
 
-        return () => {
-            isMounted = false;
-        };
+        const syncProduct = () => loadProduct();
+        window.addEventListener("kc-catalog-changed", syncProduct);
+
+        return () => window.removeEventListener("kc-catalog-changed", syncProduct);
     }, [productId]);
 
     const images = useMemo(() => {
@@ -80,7 +71,7 @@ function WomenWearProductDetails({ isDark }) {
 
     const handleAddToCart = async () => {
         if (!isAuthenticated) {
-            navigate('/login');
+            navigate('/login', { state: { from: location } });
             return;
         }
 
@@ -134,7 +125,7 @@ function WomenWearProductDetails({ isDark }) {
             window.open(response.whatsappUrl, "_blank", "noopener,noreferrer");
         } catch (error) {
             const fallbackMessage = [
-                "Hello Karthick Cloths, I want to order:",
+                "Hello TRIAL BY TSHIRT, I want to order:",
                 `Product: ${product.name}`,
                 `Product ID: ${product.id}`,
                 `Color: ${selectedColor}`,
@@ -145,7 +136,7 @@ function WomenWearProductDetails({ isDark }) {
                 "Please confirm availability and delivery.",
             ].join("\n");
 
-            const whatsappUrl = `https://wa.me/9025758149?text=${encodeURIComponent(fallbackMessage)}`;
+            const whatsappUrl = `https://wa.me/8667015665?text=${encodeURIComponent(fallbackMessage)}`;
             window.open(whatsappUrl, "_blank", "noopener,noreferrer");
         } finally {
             setIsSubmitting(false);

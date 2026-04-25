@@ -1,9 +1,9 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { fetchMenProducts } from "../../services/api";
 import { menProductsFallback } from "./menProductsData";
 import { useAuth } from "../../context/AuthContext";
 import { useWishlist } from "../../context/WishlistContext";
+import { getCatalogProducts } from "../../services/catalogStore";
 
 const priceRanges = [
     { label: "Under ₹400", min: 0, max: 400 },
@@ -12,22 +12,15 @@ const priceRanges = [
     { label: "₹701+", min: 701, max: Infinity },
 ];
 
-const mergeProducts = (apiProducts = []) => {
-    const productsById = new Map();
-
-    apiProducts.forEach((product) => {
-        productsById.set(product.id, product);
-    });
-
-    // Keep local data as override so edits in menProductsData are visible instantly.
-    menProductsFallback.forEach((product) => {
-        productsById.set(product.id, product);
-    });
-
-    return Array.from(productsById.values());
-};
-
-function MenWear({ isDark, onSelectProduct }) {
+function MenWear({
+    isDark,
+    onSelectProduct,
+    categoryKey = "men",
+    routeBase = "/men",
+    pageTitle = "Men Wears",
+    pageDescription = "Elevated everyday essentials in a clean monochrome experience. Discover premium fits with refined filters and fluid interactions.",
+    fallbackProducts = menProductsFallback,
+}) {
     const navigate = useNavigate();
     const { isAuthenticated } = useAuth();
     const { toggleWishlist, isWishlisted } = useWishlist();
@@ -70,27 +63,21 @@ function MenWear({ isDark, onSelectProduct }) {
     }, [isMobileFilterOpen]);
 
     useEffect(() => {
-        let isMounted = true;
-
-        const loadProducts = async () => {
-            try {
-                const data = await fetchMenProducts();
-                if (isMounted) {
-                    setProducts(mergeProducts(data));
-                }
-            } catch (error) {
-                if (isMounted) {
-                    setProducts(menProductsFallback);
-                }
-            }
+        const loadProducts = () => {
+            const catalogProducts = getCatalogProducts(categoryKey);
+            setProducts(catalogProducts.length > 0 ? catalogProducts : fallbackProducts);
         };
 
         loadProducts();
 
-        return () => {
-            isMounted = false;
+        const syncProducts = () => {
+            const catalogProducts = getCatalogProducts(categoryKey);
+            setProducts(catalogProducts.length > 0 ? catalogProducts : fallbackProducts);
         };
-    }, []);
+        window.addEventListener("kc-catalog-changed", syncProducts);
+
+        return () => window.removeEventListener("kc-catalog-changed", syncProducts);
+    }, [categoryKey, fallbackProducts]);
 
     const brands = useMemo(() => [...new Set(products.map((item) => item.brand))], [products]);
     const colors = useMemo(() => [...new Set(products.flatMap((item) => item.availableColors))], [products]);
@@ -202,8 +189,8 @@ function MenWear({ isDark, onSelectProduct }) {
             availableColors: product.availableColors,
             sleeve: product.sleeve,
             images: product.images,
-            category: "men",
-            route: `/men/${product.id}/details`,
+            category: categoryKey,
+            route: `${routeBase}/${product.id}/details`,
         });
     };
 
@@ -224,10 +211,8 @@ function MenWear({ isDark, onSelectProduct }) {
                     <p className={isDark ? "text-xs font-semibold uppercase tracking-[0.35em] text-zinc-400" : "text-xs font-semibold uppercase tracking-[0.35em] text-zinc-600"}>
                         Curated Collection
                     </p>
-                    <h1 className="mt-4 text-5xl font-semibold tracking-wide md:text-7xl font-[Cormorant_Garamond]">Men Wears</h1>
-                    <p className={isDark ? "mx-auto mt-4 max-w-2xl text-sm leading-relaxed text-zinc-300 md:text-base" : "mx-auto mt-4 max-w-2xl text-sm leading-relaxed text-zinc-600 md:text-base"}>
-                        Elevated everyday essentials in a clean monochrome experience. Discover premium fits with refined filters and fluid interactions.
-                    </p>
+                    <h1 className="mt-4 text-5xl font-semibold tracking-wide md:text-7xl font-[Cormorant_Garamond]">{pageTitle}</h1>
+                    <p className={isDark ? "mx-auto mt-4 max-w-2xl text-sm leading-relaxed text-zinc-300 md:text-base" : "mx-auto mt-4 max-w-2xl text-sm leading-relaxed text-zinc-600 md:text-base"}>{pageDescription}</p>
                 </div>
 
                 <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
@@ -532,7 +517,7 @@ function MenWear({ isDark, onSelectProduct }) {
                                         <label key={range.label} className="flex items-center gap-2 text-sm">
                                             <input
                                                 type="radio"
-                                                name="mobile-men-price"
+                                                name={`mobile-${categoryKey}-price`}
                                                 className="h-4 w-4 accent-black"
                                                 checked={pendingPriceRange?.label === range.label}
                                                 onChange={() => setPendingPriceRange(range)}

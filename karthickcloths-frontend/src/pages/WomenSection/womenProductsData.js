@@ -2,7 +2,7 @@ export const womenProductsFallback = [
     {
         id: 101,
         name: "A-Line Printed Kurti With Dupatta Set",
-        brand: "KTshirts",
+        brand: "TRIAL BY TSHIRT",
         originalPrice: 1499,
         offerPrice: 699,
         discountPercent: 53,
@@ -46,7 +46,7 @@ export const womenProductsFallback = [
     {
         id: 103,
         name: "Minimal Co-Ord Set for Everyday",
-        brand: "KTshirts",
+        brand: "TRIAL BY TSHIRT",
         originalPrice: 1699,
         offerPrice: 799,
         discountPercent: 52,
@@ -68,7 +68,7 @@ export const womenProductsFallback = [
     {
         id: 104,
         name: "Floral V-Neck Maxi Dress",
-        brand: "KTshirts",
+        brand: "TRIAL BY TSHIRT",
         originalPrice: 2199,
         offerPrice: 999,
         discountPercent: 55,
@@ -110,3 +110,4 @@ export const womenProductsFallback = [
         ],
     },
 ];
+
