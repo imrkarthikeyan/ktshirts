@@ -35,7 +35,7 @@ public class User {
     @Column(nullable = false)
     private String pincode;
 
-    @Column(nullable = false)
+    @Column
     private boolean admin;
 
     @Column(name = "created_at")
