@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import CuratedLooksPage from "./CuratedLooksPage";
+import { getHomeContent, syncHomeContentFromServer } from "../services/homeStore";
 
 const heroSlides = [
     {
@@ -77,26 +79,16 @@ const categoryItems = [
     },
 ];
 
-const editCards = [
-    {
-        title: "On-Trend",
-        subtitle: "Fresh styles for modern elegance for women",
-        image: "https://images.unsplash.com/photo-1485230895905-ec40ba36b9bc?auto=format&fit=crop&w=900&q=80",
-    },
-    {
-        title: "Varsity Edit",
-        subtitle: "Sport-inspired styles with street attitude",
-        image: "https://images.unsplash.com/photo-1516257984-b1b4d707412e?auto=format&fit=crop&w=900&q=80",
-    },
-];
-
 function HomePage({ isDark }) {
+    const navigate = useNavigate();
     const [activeSlide, setActiveSlide] = useState(0);
     const [showContent, setShowContent] = useState(false);
     const [isRailPaused, setIsRailPaused] = useState(false);
+    const [homeContent, setHomeContent] = useState(() => getHomeContent());
     const railRef = useRef(null);
 
     const movingItems = useMemo(() => [...categoryItems, ...categoryItems], []);
+    const featuredCards = homeContent.featuredCards;
 
     const goToNextSlide = () => {
         setActiveSlide((prev) => (prev + 1) % heroSlides.length);
@@ -116,6 +108,32 @@ function HomePage({ isDark }) {
         }, 120);
 
         return () => clearTimeout(timer);
+    }, []);
+
+    useEffect(() => {
+        const syncHomeContent = () => setHomeContent(getHomeContent());
+        const loadFromServer = async () => {
+            await syncHomeContentFromServer(true);
+            syncHomeContent();
+        };
+        const syncHomeContentFromStorage = (event) => {
+            if (!event.key || event.key === "kc-home-content-v1") {
+                syncHomeContent();
+            }
+        };
+
+        syncHomeContent();
+        void loadFromServer();
+        const intervalId = window.setInterval(() => {
+            void loadFromServer();
+        }, 15000);
+        window.addEventListener("kc-home-content-changed", syncHomeContent);
+        window.addEventListener("storage", syncHomeContentFromStorage);
+        return () => {
+            window.clearInterval(intervalId);
+            window.removeEventListener("kc-home-content-changed", syncHomeContent);
+            window.removeEventListener("storage", syncHomeContentFromStorage);
+        };
     }, []);
 
     useEffect(() => {
@@ -237,11 +255,11 @@ function HomePage({ isDark }) {
                 </div>
 
                 <div className="mx-auto mt-10 grid max-w-[760px] grid-cols-1 gap-8 pb-8 md:max-w-[950px] md:grid-cols-2">
-                    {editCards.map((card, index) => (
+                    {featuredCards.map((card, index) => (
                         <article
                             key={card.title}
-                            className={`overflow-hidden rounded-xl transition-all duration-700 ease-out hover:-translate-y-1 hover:shadow-[0_14px_35px_rgba(0,0,0,0.16)] ${isDark ? "border border-zinc-700 bg-zinc-900 shadow-[0_6px_30px_rgba(0,0,0,0.1)]" : "border border-zinc-300 bg-white shadow-[0_6px_30px_rgba(0,0,0,0.1)]"} ${showContent ? "translate-y-0 opacity-100" : "translate-y-10 opacity-0"
-                                }`}
+                            className={`cursor-pointer overflow-hidden rounded-xl transition-all duration-700 ease-out hover:-translate-y-1 hover:shadow-[0_14px_35px_rgba(0,0,0,0.16)] ${isDark ? "border border-zinc-700 bg-zinc-900 shadow-[0_6px_30px_rgba(0,0,0,0.1)]" : "border border-zinc-300 bg-white shadow-[0_6px_30px_rgba(0,0,0,0.1)]"} ${showContent ? "translate-y-0 opacity-100" : "translate-y-10 opacity-0"}`}
+                            onClick={() => navigate(`/home-product/${card.product.id}/details`)}
                             style={{ transitionDelay: `${420 + index * 140}ms` }}
                         >
                             <div className="h-[320px] overflow-hidden md:h-[320px]">
@@ -257,7 +275,11 @@ function HomePage({ isDark }) {
                                 </h3>
                                 <p className={isDark ? "mt-1 text-[20px] text-zinc-300 md:text-[24px]" : "mt-1 text-[20px] text-zinc-700 md:text-[24px]"}>{card.subtitle}</p>
                                 <a
-                                    href="#"
+                                    href={`/home-product/${card.product.id}/details`}
+                                    onClick={(event) => {
+                                        event.preventDefault();
+                                        navigate(`/home-product/${card.product.id}/details`);
+                                    }}
                                     className={isDark ? "mt-2 inline-block border-b-2 border-zinc-100 text-[26px] font-semibold tracking-wide transition hover:text-zinc-300 md:text-[30px]" : "mt-2 inline-block border-b-2 border-zinc-900 text-[26px] font-semibold tracking-wide transition hover:text-zinc-600 md:text-[30px]"}
                                 >
                                     SHOP NOW

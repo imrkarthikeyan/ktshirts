@@ -18,12 +18,15 @@ import Search from "./pages/Search";
 import Wishlist from "./pages/Wishlist";
 import Footer from "./components/Footer";
 import AdminDashboard from "./pages/Admin/AdminDashboard";
+import HandleHome from "./pages/Admin/HandleHome";
+import HandleFooter from "./pages/Admin/HandleFooter";
 import CustomEditionOrders from "./pages/Admin/CustomEditionOrders";
 import ConstitutionalEdition from "./pages/ConstitutionalEdition/ConstitutionalEdition";
 import ConstitutionalEditionProductDetails from "./pages/ConstitutionalEdition/ConstitutionalEditionProductDetails";
 import CustomEdition from "./pages/CustomEdition";
 import CustomEditionSuccess from "./pages/CustomEditionSuccess";
 import CustomEditionTracking from "./pages/CustomEditionTracking";
+import HomeProductDetails from "./pages/HomeProductDetails";
 import StoreLocator from "./pages/StoreLocator";
 
 function App() {
@@ -62,6 +65,7 @@ function App() {
                 <Route path="/" element={<HomePage isDark={isDark} />} />
                 <Route path="/login" element={<Login />} />
                 <Route path="/signup" element={<Signup />} />
+                <Route path="/home-product/:prod_id/details" element={<HomeProductDetails isDark={isDark} />} />
                 <Route
                     path="/men"
                     element={<MenWear isDark={isDark} onSelectProduct={(productId) => navigate(`/men/${productId}/details`)} />}
@@ -99,6 +103,22 @@ function App() {
                     element={
                         <ProtectedRoute requireAdmin>
                             <AdminDashboard isDark={isDark} />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/admin/handle-footer"
+                    element={
+                        <ProtectedRoute requireAdmin>
+                            <HandleFooter isDark={isDark} />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/admin/handle-home"
+                    element={
+                        <ProtectedRoute requireAdmin>
+                            <HandleHome isDark={isDark} />
                         </ProtectedRoute>
                     }
                 />

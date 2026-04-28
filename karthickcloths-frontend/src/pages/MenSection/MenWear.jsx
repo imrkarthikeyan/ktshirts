@@ -67,6 +67,11 @@ function MenWear({
             const catalogProducts = getCatalogProducts(categoryKey);
             setProducts(catalogProducts.length > 0 ? catalogProducts : fallbackProducts);
         };
+        const syncProductsFromStorage = (event) => {
+            if (!event.key || event.key === "kc-admin-catalog-v1") {
+                loadProducts();
+            }
+        };
 
         loadProducts();
 
@@ -75,8 +80,12 @@ function MenWear({
             setProducts(catalogProducts.length > 0 ? catalogProducts : fallbackProducts);
         };
         window.addEventListener("kc-catalog-changed", syncProducts);
+        window.addEventListener("storage", syncProductsFromStorage);
 
-        return () => window.removeEventListener("kc-catalog-changed", syncProducts);
+        return () => {
+            window.removeEventListener("kc-catalog-changed", syncProducts);
+            window.removeEventListener("storage", syncProductsFromStorage);
+        };
     }, [categoryKey, fallbackProducts]);
 
     const brands = useMemo(() => [...new Set(products.map((item) => item.brand))], [products]);

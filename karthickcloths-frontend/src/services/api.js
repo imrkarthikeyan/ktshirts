@@ -271,3 +271,36 @@ export async function cancelCustomEditionRequest(orderId, token) {
     return data;
 }
 
+export async function fetchSiteContent(key) {
+    const response = await fetch(`${API_BASE_URL}/site-content/${encodeURIComponent(key)}`);
+    const data = await response.json();
+
+    if (!response.ok || data?.success === false) {
+        throw new Error(data?.message || "Unable to fetch site content");
+    }
+
+    return data?.data || {};
+}
+
+export async function updateSiteContent(key, payload, token) {
+    if (!token) {
+        throw new Error("Admin token is required to update site content");
+    }
+
+    const response = await fetch(`${API_BASE_URL}/site-content/${encodeURIComponent(key)}`, {
+        method: "PUT",
+        headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(payload),
+    });
+
+    const data = await response.json();
+    if (!response.ok || data?.success === false) {
+        throw new Error(data?.message || "Unable to update site content");
+    }
+
+    return data?.data || payload;
+}
+

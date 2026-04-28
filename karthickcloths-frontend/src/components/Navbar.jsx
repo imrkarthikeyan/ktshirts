@@ -251,6 +251,24 @@ function Navbar({ isDark, onToggleTheme }) {
                                                 >
                                                     📋 Handle Custom Edition Requests
                                                 </button>
+                                                <button
+                                                    onClick={() => {
+                                                        navigate("/admin/handle-footer");
+                                                        setProfileOpen(false);
+                                                    }}
+                                                    className={isDark ? "block w-full text-left px-4 py-2 text-sm text-black hover:bg-zinc-100 transition" : "block w-full text-left px-4 py-2 text-sm text-white hover:bg-gray-800 transition"}
+                                                >
+                                                    🧾 Handle Footer
+                                                </button>
+                                                <button
+                                                    onClick={() => {
+                                                        navigate("/admin/handle-home");
+                                                        setProfileOpen(false);
+                                                    }}
+                                                    className={isDark ? "block w-full text-left px-4 py-2 text-sm text-black hover:bg-zinc-100 transition" : "block w-full text-left px-4 py-2 text-sm text-white hover:bg-gray-800 transition"}
+                                                >
+                                                    🏠 Handle Home
+                                                </button>
                                             </>
                                         ) : null}
                                         <button
@@ -351,6 +369,8 @@ function Navbar({ isDark, onToggleTheme }) {
                                 <>
                                     <button onClick={() => handleNavigate("/admin")} className="block w-full py-2 text-left text-base">Admin Dashboard</button>
                                     <button onClick={() => handleNavigate("/admin/custom-edition")} className="block w-full py-2 text-left text-base">Handle Custom Edition Requests</button>
+                                    <button onClick={() => handleNavigate("/admin/handle-footer")} className="block w-full py-2 text-left text-base">Handle Footer</button>
+                                    <button onClick={() => handleNavigate("/admin/handle-home")} className="block w-full py-2 text-left text-base">Handle Home</button>
                                 </>
                             ) : null}
                             <button onClick={() => handleNavigate("/wishlist")} className="block w-full py-2 text-left text-base">My Wishlist</button>

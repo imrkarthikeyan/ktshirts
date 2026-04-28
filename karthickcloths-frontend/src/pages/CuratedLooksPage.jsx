@@ -1,36 +1,12 @@
 import { useEffect, useState } from "react";
-
-const curatedLooks = [
-    {
-        title: "Elegant",
-        subtitle: "Summer Vibes",
-        image: "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&w=800&q=80",
-    },
-    {
-        title: "Premium",
-        subtitle: "Workwear Essentials",
-        image: "https://images.unsplash.com/photo-1617137968427-85924c800a22?auto=format&fit=crop&w=1900&q=80",
-    },
-    {
-        title: "Casual",
-        subtitle: "Street Style",
-        image: "https://images.unsplash.com/photo-1515886657613-9f3515b0c78f?auto=format&fit=crop&w=800&q=80",
-    },
-    {
-        title: "Sporty",
-        subtitle: "Athletic Wear",
-        image: "https://images.unsplash.com/photo-1617137968427-85924c800a22?auto=format&fit=crop&w=1900&q=80",
-    },
-    {
-        title: "Evening",
-        subtitle: "Formal Collection",
-        image: "https://images.unsplash.com/photo-1617137968427-85924c800a22?auto=format&fit=crop&w=1900&q=80",
-    },
-];
+import { useNavigate } from "react-router-dom";
+import { getHomeContent, syncHomeContentFromServer } from "../services/homeStore";
 
 function CuratedLooksPage({ isDark }) {
+    const navigate = useNavigate();
     const [activeIndex, setActiveIndex] = useState(0);
     const [showContent, setShowContent] = useState(false);
+    const [curatedLooks, setCuratedLooks] = useState(() => getHomeContent().curatedLooks);
 
     const goToPrev = () => {
         setActiveIndex((prev) => (prev - 1 + curatedLooks.length) % curatedLooks.length);
@@ -50,6 +26,38 @@ function CuratedLooksPage({ isDark }) {
         }, 100);
         return () => clearTimeout(timer);
     }, []);
+
+    useEffect(() => {
+        const syncHomeContent = () => setCuratedLooks(getHomeContent().curatedLooks);
+        const loadFromServer = async () => {
+            await syncHomeContentFromServer(true);
+            syncHomeContent();
+        };
+        const syncHomeContentFromStorage = (event) => {
+            if (!event.key || event.key === "kc-home-content-v1") {
+                syncHomeContent();
+            }
+        };
+
+        syncHomeContent();
+        void loadFromServer();
+        const intervalId = window.setInterval(() => {
+            void loadFromServer();
+        }, 15000);
+        window.addEventListener("kc-home-content-changed", syncHomeContent);
+        window.addEventListener("storage", syncHomeContentFromStorage);
+        return () => {
+            window.clearInterval(intervalId);
+            window.removeEventListener("kc-home-content-changed", syncHomeContent);
+            window.removeEventListener("storage", syncHomeContentFromStorage);
+        };
+    }, []);
+
+    useEffect(() => {
+        if (activeIndex >= curatedLooks.length) {
+            setActiveIndex(0);
+        }
+    }, [activeIndex, curatedLooks.length]);
 
     return (
         <section className={isDark ? "bg-black px-4 py-16 transition-colors duration-500 md:py-20" : "bg-white px-4 py-16 transition-colors duration-500 md:py-20"}>
@@ -100,7 +108,7 @@ function CuratedLooksPage({ isDark }) {
                                         {isVisible && (
                                             <article
                                                 className={`transform transition-all duration-700 ease-out ${isActive ? "scale-100 opacity-100" : "scale-95 opacity-60 hover:opacity-80"}`}
-                                                onClick={() => goToIndex(index)}
+                                                onClick={() => navigate(`/home-product/${look.product.id}/details`)}
                                             >
                                                 <div className={`group relative overflow-hidden rounded-xl border-2 transition-all duration-300 ${isDark ? "border-zinc-700 shadow-lg shadow-black/40" : "border-zinc-200 shadow-lg shadow-zinc-300/40"}`}>
                                                     {/* Image Container */}
@@ -129,6 +137,7 @@ function CuratedLooksPage({ isDark }) {
                                                         className={`absolute right-3 bottom-3 flex items-center gap-2 rounded-lg px-4 py-2 text-[12px] font-semibold transition-all duration-300 active:scale-95 md:text-[14px] ${isDark ? "border border-white/30 bg-white/10 text-white backdrop-blur-sm hover:border-white/60 hover:bg-white/20" : "border border-zinc-900/30 bg-white/80 text-zinc-900 backdrop-blur-sm hover:border-zinc-900/60 hover:bg-white"}`}
                                                         onClick={(e) => {
                                                             e.stopPropagation();
+                                                            navigate("/constitutional-edition");
                                                         }}
                                                     >
                                                         <span>Shop All</span>

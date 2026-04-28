@@ -14,13 +14,22 @@ function Search({ isDark }) {
             setProducts(getAllCatalogProducts());
             setLoading(false);
         };
+        const syncProductsFromStorage = (event) => {
+            if (!event.key || event.key === "kc-admin-catalog-v1") {
+                setProducts(getAllCatalogProducts());
+            }
+        };
 
         loadProducts();
 
         const syncProducts = () => setProducts(getAllCatalogProducts());
         window.addEventListener("kc-catalog-changed", syncProducts);
+        window.addEventListener("storage", syncProductsFromStorage);
 
-        return () => window.removeEventListener("kc-catalog-changed", syncProducts);
+        return () => {
+            window.removeEventListener("kc-catalog-changed", syncProducts);
+            window.removeEventListener("storage", syncProductsFromStorage);
+        };
     }, []);
 
     useEffect(() => {

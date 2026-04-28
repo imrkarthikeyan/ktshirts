@@ -31,13 +31,22 @@ function KidsWearProductDetails({ isDark }) {
             setProduct(fallbackProduct || null);
             setSelectedColor(fallbackProduct?.defaultColor || fallbackProduct?.availableColors?.[0] || "Black");
         };
+        const syncProductFromStorage = (event) => {
+            if (!event.key || event.key === "kc-admin-catalog-v1") {
+                loadProduct();
+            }
+        };
 
         loadProduct();
 
         const syncProduct = () => loadProduct();
         window.addEventListener("kc-catalog-changed", syncProduct);
+        window.addEventListener("storage", syncProductFromStorage);
 
-        return () => window.removeEventListener("kc-catalog-changed", syncProduct);
+        return () => {
+            window.removeEventListener("kc-catalog-changed", syncProduct);
+            window.removeEventListener("storage", syncProductFromStorage);
+        };
     }, [productId]);
 
     const images = useMemo(() => {

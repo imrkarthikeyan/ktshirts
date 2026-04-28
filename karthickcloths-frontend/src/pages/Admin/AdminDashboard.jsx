@@ -140,14 +140,18 @@ function AdminDashboard({ isDark }) {
         };
 
         if (!productPayload.name || !productPayload.brand || !images[0]) {
-            setMessage("Please enter the product name, brand, and at least one image.");
+            const validationMessage = "Please enter the product name, brand, and at least one image.";
+            setMessage(validationMessage);
+            window.alert(validationMessage);
             return;
         }
 
         upsertCatalogProduct(selectedCategory, productPayload);
         setEditingProductId(null);
         setFormData(defaultFormState(selectedCategory));
-        setMessage("Product saved successfully.");
+        const successMessage = "Product saved successfully.";
+        setMessage(successMessage);
+        window.alert(successMessage);
     };
 
     return (
@@ -383,6 +387,44 @@ function AdminDashboard({ isDark }) {
                     </div>
                     <p className={isDark ? "mt-4 text-sm text-zinc-400" : "mt-4 text-sm text-zinc-600"}>
                         Custom edition requests now live in a separate admin page so the main catalog dashboard stays focused on products.
+                    </p>
+                </section>
+
+                <section className={isDark ? "mt-8 rounded-3xl border border-zinc-800 bg-zinc-900 p-5 shadow-xl shadow-black/20" : "mt-8 rounded-3xl border border-zinc-200 bg-white p-5 shadow-xl shadow-zinc-200/60"}>
+                    <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+                        <div>
+                            <p className="text-xs font-semibold uppercase tracking-[0.22em] text-zinc-500">Footer controls</p>
+                            <h2 className="mt-2 text-2xl font-semibold">Handle Footer</h2>
+                        </div>
+                        <button
+                            type="button"
+                            onClick={() => navigate("/admin/handle-footer")}
+                            className="rounded-full bg-cyan-500 px-5 py-3 text-sm font-semibold text-white"
+                        >
+                            Edit Contact, Location, Tagline
+                        </button>
+                    </div>
+                    <p className={isDark ? "mt-4 text-sm text-zinc-400" : "mt-4 text-sm text-zinc-600"}>
+                        Update the footer tagline, GSTIN, locations, and contact details without touching the main layout.
+                    </p>
+                </section>
+
+                <section className={isDark ? "mt-8 rounded-3xl border border-zinc-800 bg-zinc-900 p-5 shadow-xl shadow-black/20" : "mt-8 rounded-3xl border border-zinc-200 bg-white p-5 shadow-xl shadow-zinc-200/60"}>
+                    <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+                        <div>
+                            <p className="text-xs font-semibold uppercase tracking-[0.22em] text-zinc-500">Home controls</p>
+                            <h2 className="mt-2 text-2xl font-semibold">Handle Home</h2>
+                        </div>
+                        <button
+                            type="button"
+                            onClick={() => navigate("/admin/handle-home")}
+                            className="rounded-full bg-cyan-500 px-5 py-3 text-sm font-semibold text-white"
+                        >
+                            Edit Featured Cards & Curated Looks
+                        </button>
+                    </div>
+                    <p className={isDark ? "mt-4 text-sm text-zinc-400" : "mt-4 text-sm text-zinc-600"}>
+                        Manage the two featured cards and the five curated looks shown on the home page.
                     </p>
                 </section>
             </section>

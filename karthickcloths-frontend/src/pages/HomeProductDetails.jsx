@@ -1,20 +1,12 @@
 import { useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
-import { createWhatsappOrderLink } from "../../services/api";
-import { menProductsFallback } from "./menProductsData";
-import { useAuth } from "../../context/AuthContext";
-import { useCart } from "../../context/CartContext";
-import { useWishlist } from "../../context/WishlistContext";
-import { getCatalogProductById } from "../../services/catalogStore";
+import { createWhatsappOrderLink } from "../services/api";
+import { useAuth } from "../context/AuthContext";
+import { useCart } from "../context/CartContext";
+import { useWishlist } from "../context/WishlistContext";
+import { getHomeProductById, syncHomeContentFromServer } from "../services/homeStore";
 
-function MenWearProductDetails({
-    isDark,
-    categoryKey = "men",
-    routeBase = "/men",
-    pageLabel = "Men Wear",
-    whatsappPhone = "8667015665",
-    fallbackProducts = menProductsFallback,
-}) {
+function HomeProductDetails({ isDark }) {
     const { prod_id } = useParams();
     const productId = Number(prod_id);
     const navigate = useNavigate();
@@ -35,34 +27,38 @@ function MenWearProductDetails({
 
     useEffect(() => {
         const loadProduct = () => {
-            const fallbackProduct = getCatalogProductById(categoryKey, productId) || fallbackProducts.find((item) => item.id === productId);
+            const fallbackProduct = getHomeProductById(productId);
             setProduct(fallbackProduct || null);
             setSelectedColor(fallbackProduct?.defaultColor || fallbackProduct?.availableColors?.[0] || "Black");
         };
+        const loadFromServer = async () => {
+            await syncHomeContentFromServer(true);
+            loadProduct();
+        };
         const syncProductFromStorage = (event) => {
-            if (!event.key || event.key === "kc-admin-catalog-v1") {
+            if (!event.key || event.key === "kc-home-content-v1") {
                 loadProduct();
             }
         };
 
         loadProduct();
+        void loadFromServer();
+        const intervalId = window.setInterval(() => {
+            void loadFromServer();
+        }, 15000);
 
         const syncProduct = () => loadProduct();
-        window.addEventListener("kc-catalog-changed", syncProduct);
+        window.addEventListener("kc-home-content-changed", syncProduct);
         window.addEventListener("storage", syncProductFromStorage);
 
         return () => {
-            window.removeEventListener("kc-catalog-changed", syncProduct);
+            window.clearInterval(intervalId);
+            window.removeEventListener("kc-home-content-changed", syncProduct);
             window.removeEventListener("storage", syncProductFromStorage);
         };
-    }, [categoryKey, fallbackProducts, productId]);
+    }, [productId]);
 
-    const images = useMemo(() => {
-        if (!product?.images?.length) {
-            return [];
-        }
-        return product.images;
-    }, [product]);
+    const images = useMemo(() => (Array.isArray(product?.images) ? product.images : []), [product]);
 
     const canSubmitOrder = selectedColor && selectedSize && quantity > 0 && product;
 
@@ -81,19 +77,19 @@ function MenWearProductDetails({
             availableColors: product.availableColors,
             sleeve: product.sleeve,
             images: product.images,
-            category: categoryKey,
-            route: `${routeBase}/${product.id}/details`,
+            category: "home",
+            route: `/home-product/${product.id}/details`,
         });
     };
 
     const handleAddToCart = async () => {
         if (!isAuthenticated) {
-            navigate('/login', { state: { from: location } });
+            navigate("/login", { state: { from: location } });
             return;
         }
 
         if (!canSubmitOrder) {
-            alert('Please select color and size');
+            alert("Please select color and size");
             return;
         }
 
@@ -110,13 +106,13 @@ function MenWearProductDetails({
                 productImage: product.images[0],
             });
 
-            setNotification('✓ Added to cart successfully!');
+            setNotification("✓ Added to cart successfully!");
             setTimeout(() => {
                 setNotification(null);
                 setQuantity(1);
             }, 2000);
-        } catch (error) {
-            setNotification('✗ Failed to add to cart');
+        } catch {
+            setNotification("✗ Failed to add to cart");
             setTimeout(() => setNotification(null), 2000);
         } finally {
             setAddingToCart(false);
@@ -140,7 +136,7 @@ function MenWearProductDetails({
             });
 
             window.open(response.whatsappUrl, "_blank", "noopener,noreferrer");
-        } catch (error) {
+        } catch {
             const fallbackMessage = [
                 "Hello TRIAL BY TSHIRT, I want to order:",
                 `Product: ${product.name}`,
@@ -153,7 +149,7 @@ function MenWearProductDetails({
                 "Please confirm availability and delivery.",
             ].join("\n");
 
-            const whatsappUrl = `https://wa.me/${whatsappPhone}?text=${encodeURIComponent(fallbackMessage)}`;
+            const whatsappUrl = `https://wa.me/8667015665?text=${encodeURIComponent(fallbackMessage)}`;
             window.open(whatsappUrl, "_blank", "noopener,noreferrer");
         } finally {
             setIsSubmitting(false);
@@ -165,10 +161,10 @@ function MenWearProductDetails({
             <main className={isDark ? "min-h-screen bg-black px-4 py-12 text-zinc-100" : "min-h-screen bg-white px-4 py-12 text-zinc-900"}>
                 <div className="mx-auto max-w-6xl">
                     <button
-                        onClick={() => navigate(routeBase)}
+                        onClick={() => navigate("/")}
                         className={isDark ? "rounded-full border border-zinc-700 px-4 py-2 text-sm text-zinc-200 hover:border-white" : "rounded-full border border-zinc-300 px-4 py-2 text-sm text-zinc-700 hover:border-black"}
                     >
-                        {`Back To ${pageLabel}`}
+                        Back To Home
                     </button>
                     <p className="mt-8 text-lg">Loading product details...</p>
                 </div>
@@ -179,16 +175,17 @@ function MenWearProductDetails({
     return (
         <main className={isDark ? "min-h-screen bg-black text-zinc-100" : "min-h-screen bg-white text-zinc-900"}>
             {notification && (
-                <div className={notification.includes('✓') ? 'fixed top-32 left-1/2 transform -translate-x-1/2 z-40 bg-green-500 text-white px-6 py-3 rounded-lg animate-fade-up' : 'fixed top-32 left-1/2 transform -translate-x-1/2 z-40 bg-red-500 text-white px-6 py-3 rounded-lg animate-fade-up'}>
+                <div className={notification.includes("✓") ? "fixed top-32 left-1/2 z-40 -translate-x-1/2 rounded-lg bg-green-500 px-6 py-3 text-white animate-fade-up" : "fixed top-32 left-1/2 z-40 -translate-x-1/2 rounded-lg bg-red-500 px-6 py-3 text-white animate-fade-up"}>
                     {notification}
                 </div>
             )}
+
             <section className="mx-auto max-w-7xl px-4 pb-12 pt-6 md:pt-10">
                 <button
-                    onClick={() => navigate(routeBase)}
+                    onClick={() => navigate("/")}
                     className={isDark ? "fade-up rounded-full border border-zinc-700 px-4 py-2 text-sm font-medium text-zinc-200 transition hover:border-white hover:text-white" : "fade-up rounded-full border border-zinc-300 px-4 py-2 text-sm font-medium text-zinc-700 transition hover:border-black hover:text-black"}
                 >
-                    {`Back To ${pageLabel}`}
+                    Back To Home
                 </button>
 
                 <div className="mt-6 grid gap-8 md:grid-cols-2 xl:grid-cols-[1.1fr_1fr]">
@@ -227,16 +224,16 @@ function MenWearProductDetails({
                             <button
                                 type="button"
                                 onClick={handleToggleWishlist}
-                                className={`wishlist-heart-btn ${isWishlisted(product.id, "men") ? "wishlist-heart-active" : ""}`}
+                                className={`wishlist-heart-btn ${isWishlisted(product.id, "home") ? "wishlist-heart-active" : ""}`}
                                 aria-label="Toggle wishlist"
                             >
-                                {isWishlisted(product.id, "men") ? "♥" : "♡"}
+                                {isWishlisted(product.id, "home") ? "♥" : "♡"}
                             </button>
                         </div>
 
                         <div className="mt-4 flex items-end gap-3">
                             <span className="text-sm font-semibold">{product.discountPercent}%</span>
-                            <span className="text-3xl font-bold">{product.originalPrice}</span>
+                            <span className="text-3xl font-bold">₹{product.originalPrice}</span>
                             <span className={isDark ? "text-xl font-semibold text-zinc-100" : "text-xl font-semibold text-zinc-900"}>₹{product.offerPrice}</span>
                         </div>
 
@@ -297,7 +294,7 @@ function MenWearProductDetails({
                             </div>
 
                             {selectedColor && selectedSize && (
-                                <div className="mt-6 fade-up">
+                                <div className="fade-up mt-6">
                                     <p className="text-sm font-medium">Quantity</p>
                                     <div className="mt-2 inline-flex items-center overflow-hidden rounded-lg border border-zinc-400 dark:border-zinc-600">
                                         <button
@@ -362,4 +359,4 @@ function MenWearProductDetails({
     );
 }
 
-export default MenWearProductDetails;
+export default HomeProductDetails;

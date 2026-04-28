@@ -58,13 +58,22 @@ function WomenWear({ isDark, onSelectProduct }) {
         const loadProducts = () => {
             setProducts(getCatalogProducts("women") || womenProductsFallback);
         };
+        const syncProductsFromStorage = (event) => {
+            if (!event.key || event.key === "kc-admin-catalog-v1") {
+                loadProducts();
+            }
+        };
 
         loadProducts();
 
         const syncProducts = () => setProducts(getCatalogProducts("women") || womenProductsFallback);
         window.addEventListener("kc-catalog-changed", syncProducts);
+        window.addEventListener("storage", syncProductsFromStorage);
 
-        return () => window.removeEventListener("kc-catalog-changed", syncProducts);
+        return () => {
+            window.removeEventListener("kc-catalog-changed", syncProducts);
+            window.removeEventListener("storage", syncProductsFromStorage);
+        };
     }, []);
 
     const brands = useMemo(() => [...new Set(products.map((item) => item.brand))], [products]);
