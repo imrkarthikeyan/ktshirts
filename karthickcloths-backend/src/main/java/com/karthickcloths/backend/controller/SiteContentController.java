@@ -17,7 +17,13 @@ import java.util.Set;
 
 @RestController
 @RequestMapping("/api/site-content")
-@CrossOrigin(origins = "http://localhost:5174")
+@CrossOrigin(origins = {
+    "http://localhost:5173",
+    "http://localhost:5174",
+    "https://trialbytshirt.com",
+    "https://www.trialbytshirt.com",
+    "https://trailbytshirt.vercel.app"
+})
 public class SiteContentController {
 
     private static final Set<String> ALLOWED_KEYS = Set.of("home", "footer");
