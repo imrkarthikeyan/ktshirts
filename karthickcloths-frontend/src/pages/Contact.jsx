@@ -1,18 +1,47 @@
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { getContactSettings, syncContactSettingsFromServer } from "../services/contactStore";
 
 function Contact({ isDark }) {
     const navigate = useNavigate();
+    const [contactSettings, setContactSettings] = useState(() => getContactSettings());
+
+    useEffect(() => {
+        const syncContact = () => setContactSettings(getContactSettings());
+        const loadContact = async () => {
+            await syncContactSettingsFromServer(true);
+            syncContact();
+        };
+
+        syncContact();
+        void loadContact();
+        window.addEventListener("kc-contact-changed", syncContact);
+
+        return () => window.removeEventListener("kc-contact-changed", syncContact);
+    }, []);
+
+    const {
+        pageTitle,
+        pageDescription,
+        supportLine,
+        email,
+        phone,
+        whatsapp,
+        workingHours,
+        address,
+        responseNote,
+    } = contactSettings;
 
     return (
         <main className={isDark ? "min-h-screen bg-black px-4 pb-12 pt-24 text-zinc-100 sm:px-6 lg:px-8" : "min-h-screen bg-zinc-50 px-4 pb-12 pt-24 text-zinc-900 sm:px-6 lg:px-8"}>
             <section className="mx-auto max-w-4xl">
                 <div className="mb-10 animate-fade-up">
                     <p className={isDark ? "text-xs font-semibold uppercase tracking-[0.3em] text-zinc-400" : "text-xs font-semibold uppercase tracking-[0.3em] text-zinc-600"}>
-                        We are here to help
+                        {supportLine}
                     </p>
-                    <h1 className="mt-3 text-4xl font-black sm:text-5xl">Contact Us</h1>
+                    <h1 className="mt-3 text-4xl font-black sm:text-5xl">{pageTitle}</h1>
                     <p className={isDark ? "mt-3 max-w-2xl text-sm leading-7 text-zinc-300" : "mt-3 max-w-2xl text-sm leading-7 text-zinc-600"}>
-                        Reach out for order help, product questions, sizing support, or partnership inquiries. Our team usually responds within one business day.
+                        {pageDescription}
                     </p>
                 </div>
 
@@ -50,18 +79,18 @@ function Contact({ isDark }) {
                         <div className={isDark ? "rounded-3xl border border-zinc-800 bg-zinc-900 p-6" : "rounded-3xl border border-zinc-200 bg-white p-6"}>
                             <h2 className="text-lg font-bold">Contact Details</h2>
                             <div className={isDark ? "mt-4 space-y-3 text-sm text-zinc-300" : "mt-4 space-y-3 text-sm text-zinc-600"}>
-                                <p><span className="font-semibold text-cyan-500">Email:</span> support@trailbytshirt.com</p>
-                                <p><span className="font-semibold text-cyan-500">Phone:</span> +91 8667015665</p>
-                                <p><span className="font-semibold text-cyan-500">WhatsApp:</span> +91 8667015665</p>
-                                <p><span className="font-semibold text-cyan-500">Hours:</span> Mon - Sat, 9:00 AM - 7:00 PM</p>
-                                <p><span className="font-semibold text-cyan-500">Address:</span> Chennai, Tamil Nadu, India</p>
+                                <p><span className="font-semibold text-cyan-500">Email:</span> {email}</p>
+                                <p><span className="font-semibold text-cyan-500">Phone:</span> {phone}</p>
+                                <p><span className="font-semibold text-cyan-500">WhatsApp:</span> {whatsapp}</p>
+                                <p><span className="font-semibold text-cyan-500">Hours:</span> {workingHours}</p>
+                                <p><span className="font-semibold text-cyan-500">Address:</span> {address}</p>
                             </div>
                         </div>
 
                         <div className={isDark ? "rounded-3xl border border-zinc-800 bg-zinc-900 p-6" : "rounded-3xl border border-zinc-200 bg-white p-6"}>
                             <h2 className="text-lg font-bold">Need a faster answer?</h2>
                             <p className={isDark ? "mt-3 text-sm leading-7 text-zinc-300" : "mt-3 text-sm leading-7 text-zinc-600"}>
-                                Use the profile page for order tracking and cart details, or go back to shopping for more products.
+                                {responseNote}
                             </p>
                             <div className="mt-5 flex flex-wrap gap-3">
                                 <button onClick={() => navigate("/profile")} className="rounded-xl border border-cyan-500 px-4 py-2 text-sm font-semibold text-cyan-500 transition hover:bg-cyan-500 hover:text-white">

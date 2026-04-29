@@ -22,7 +22,124 @@ const makeProduct = (product) => ({
     images: Array.isArray(product.images) ? product.images.slice(0, 4) : [],
 });
 
+const defaultHeroSlide = (slide) => ({
+    id: Number(slide.id),
+    title: String(slide.title || "").trim(),
+    subtitle: String(slide.subtitle || "").trim(),
+    offer: String(slide.offer || "").trim(),
+    cta: String(slide.cta || "SHOP NOW").trim(),
+    image: String(slide.image || "").trim(),
+    targetPath: String(slide.targetPath || "/constitutional-edition").trim(),
+});
+
+const defaultCategoryItem = (item) => ({
+    id: Number(item.id),
+    title: String(item.title || "").trim(),
+    image: String(item.image || "").trim(),
+    targetPath: String(item.targetPath || "/constitutional-edition").trim(),
+});
+
 const defaultHomeContent = {
+    heroSlides: [
+        defaultHeroSlide({
+            id: 1,
+            title: "Denim",
+            subtitle: "Dreams",
+            offer: "Up To 50% Off",
+            cta: "SHOP NOW",
+            image: "https://images.unsplash.com/photo-1617137968427-85924c800a22?auto=format&fit=crop&w=1900&q=80",
+            targetPath: "/constitutional-edition",
+        }),
+        defaultHeroSlide({
+            id: 2,
+            title: "Perfectly",
+            subtitle: "Suited",
+            offer: "Premium Workwear Edit",
+            cta: "SHOP WORKWEAR",
+            image: "https://images.unsplash.com/photo-1507679799987-c73779587ccf?auto=format&fit=crop&w=1900&q=80",
+            targetPath: "/custom-edition",
+        }),
+        defaultHeroSlide({
+            id: 3,
+            title: "Urban",
+            subtitle: "Basics",
+            offer: "Fresh Fits For Every Day",
+            cta: "SHOP CASUAL",
+            image: "https://images.unsplash.com/photo-1523398002811-999ca8dec234?auto=format&fit=crop&w=1900&q=80",
+            targetPath: "/constitutional-edition",
+        }),
+        defaultHeroSlide({
+            id: 4,
+            title: "Summer",
+            subtitle: "Cottons",
+            offer: "Breezy Looks Starting Today",
+            cta: "SHOP NOW",
+            image: "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=1900&q=80",
+            targetPath: "/custom-edition",
+        }),
+        defaultHeroSlide({
+            id: 5,
+            title: "Street",
+            subtitle: "Culture",
+            offer: "New Drop Just Landed",
+            cta: "EXPLORE MORE",
+            image: "https://images.unsplash.com/photo-1552374196-c4e7ffc6e126?auto=format&fit=crop&w=1900&q=80",
+            targetPath: "/constitutional-edition",
+        }),
+        defaultHeroSlide({
+            id: 6,
+            title: "Bold",
+            subtitle: "Essentials",
+            offer: "Everyday Must Haves",
+            cta: "SHOP DAILY",
+            image: "https://images.unsplash.com/photo-1512436991641-6745cdb1723f?auto=format&fit=crop&w=1900&q=80",
+            targetPath: "/custom-edition",
+        }),
+    ],
+    categoryItems: [
+        defaultCategoryItem({
+            id: 1,
+            title: "SS26",
+            image: "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?auto=format&fit=crop&w=700&q=80",
+            targetPath: "/constitutional-edition",
+        }),
+        defaultCategoryItem({
+            id: 2,
+            title: "Women",
+            image: "https://images.unsplash.com/photo-1483985988355-763728e1935b?auto=format&fit=crop&w=700&q=80",
+            targetPath: "/custom-edition",
+        }),
+        defaultCategoryItem({
+            id: 3,
+            title: "Men",
+            image: "https://images.unsplash.com/photo-1617127365659-c47fa864d8bc?auto=format&fit=crop&w=700&q=80",
+            targetPath: "/constitutional-edition",
+        }),
+        defaultCategoryItem({
+            id: 4,
+            title: "Kids",
+            image: "https://images.unsplash.com/photo-1519340241574-2cec6aef0c01?auto=format&fit=crop&w=700&q=80",
+            targetPath: "/custom-edition",
+        }),
+        defaultCategoryItem({
+            id: 5,
+            title: "WROGN",
+            image: "https://images.unsplash.com/photo-1504593811423-6dd665756598?auto=format&fit=crop&w=700&q=80",
+            targetPath: "/constitutional-edition",
+        }),
+        defaultCategoryItem({
+            id: 6,
+            title: "Footwear",
+            image: "https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=700&q=80",
+            targetPath: "/custom-edition",
+        }),
+        defaultCategoryItem({
+            id: 7,
+            title: "Beauty",
+            image: "https://images.unsplash.com/photo-1617897903246-719242758050?auto=format&fit=crop&w=700&q=80",
+            targetPath: "/constitutional-edition",
+        }),
+    ],
     featuredCards: [
         {
             id: 1,
@@ -237,6 +354,24 @@ let lastSyncedAt = 0;
 let syncPromise = null;
 
 const normalizeHomeContent = (value = {}) => {
+    const heroSlides = Array.isArray(value.heroSlides) && value.heroSlides.length > 0
+        ? value.heroSlides.map((slide, index) => ({
+            ...defaultHomeContent.heroSlides[index % defaultHomeContent.heroSlides.length],
+            ...slide,
+            id: Number(slide.id) || index + 1,
+            targetPath: String(slide.targetPath || slide.target || "/constitutional-edition").trim(),
+        }))
+        : defaultHomeContent.heroSlides;
+
+    const categoryItems = Array.isArray(value.categoryItems) && value.categoryItems.length > 0
+        ? value.categoryItems.map((item, index) => ({
+            ...defaultHomeContent.categoryItems[index % defaultHomeContent.categoryItems.length],
+            ...item,
+            id: Number(item.id) || index + 1,
+            targetPath: String(item.targetPath || item.target || "/constitutional-edition").trim(),
+        }))
+        : defaultHomeContent.categoryItems;
+
     const featuredCards = Array.isArray(value.featuredCards) && value.featuredCards.length === 2
         ? value.featuredCards.map((card, index) => ({
             ...defaultHomeContent.featuredCards[index],
@@ -256,6 +391,8 @@ const normalizeHomeContent = (value = {}) => {
         : defaultHomeContent.curatedLooks;
 
     return {
+        heroSlides,
+        categoryItems,
         featuredCards,
         curatedLooks,
     };

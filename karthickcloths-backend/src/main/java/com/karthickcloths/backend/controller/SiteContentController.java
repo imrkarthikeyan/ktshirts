@@ -26,7 +26,7 @@ import java.util.Set;
 })
 public class SiteContentController {
 
-    private static final Set<String> ALLOWED_KEYS = Set.of("home", "footer");
+    private static final Set<String> ALLOWED_KEYS = Set.of("home", "footer", "contact");
 
     @Autowired
     private SiteContentRepository siteContentRepository;

@@ -20,6 +20,7 @@ import Footer from "./components/Footer";
 import AdminDashboard from "./pages/Admin/AdminDashboard";
 import HandleHome from "./pages/Admin/HandleHome";
 import HandleFooter from "./pages/Admin/HandleFooter";
+import HandleContact from "./pages/Admin/HandleContact";
 import CustomEditionOrders from "./pages/Admin/CustomEditionOrders";
 import ConstitutionalEdition from "./pages/ConstitutionalEdition/ConstitutionalEdition";
 import ConstitutionalEditionProductDetails from "./pages/ConstitutionalEdition/ConstitutionalEditionProductDetails";
@@ -111,6 +112,14 @@ function App() {
                     element={
                         <ProtectedRoute requireAdmin>
                             <HandleFooter isDark={isDark} />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/admin/handle-contact"
+                    element={
+                        <ProtectedRoute requireAdmin>
+                            <HandleContact isDark={isDark} />
                         </ProtectedRoute>
                     }
                 />

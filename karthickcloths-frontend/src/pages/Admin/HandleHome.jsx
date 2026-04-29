@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import { getHomeContent, homeContentDefaults, resetHomeContent, syncHomeContentFromServer, updateHomeContent } from "../../services/homeStore";
@@ -30,6 +30,23 @@ const createCardForm = (card = {}) => ({
     product: createProductForm(card.product),
 });
 
+const createHeroSlideForm = (slide = {}) => ({
+    id: slide.id || "",
+    title: slide.title || "",
+    subtitle: slide.subtitle || "",
+    offer: slide.offer || "",
+    cta: slide.cta || "",
+    image: slide.image || "",
+    targetPath: slide.targetPath || "/constitutional-edition",
+});
+
+const createCategoryItemForm = (item = {}) => ({
+    id: item.id || "",
+    title: item.title || "",
+    image: item.image || "",
+    targetPath: item.targetPath || "/constitutional-edition",
+});
+
 const toList = (value) =>
     String(value || "")
         .split(",")
@@ -46,7 +63,13 @@ function HandleHome({ isDark }) {
     const { user } = useAuth();
     const [featuredCards, setFeaturedCards] = useState(() => getHomeContent().featuredCards.map(createCardForm));
     const [curatedLooks, setCuratedLooks] = useState(() => getHomeContent().curatedLooks.map(createCardForm));
+    const [heroSlides, setHeroSlides] = useState(() => getHomeContent().heroSlides.map(createHeroSlideForm));
+    const [categoryItems, setCategoryItems] = useState(() => getHomeContent().categoryItems.map(createCategoryItemForm));
+    const [editingHeroIndex, setEditingHeroIndex] = useState(0);
+    const [editingCategoryIndex, setEditingCategoryIndex] = useState(0);
     const [message, setMessage] = useState(null);
+    const heroEditorRef = useRef(null);
+    const categoryEditorRef = useRef(null);
 
     useEffect(() => {
         if (!(user?.admin || user?.isAdmin)) {
@@ -59,6 +82,8 @@ function HandleHome({ isDark }) {
             const content = getHomeContent();
             setFeaturedCards(content.featuredCards.map(createCardForm));
             setCuratedLooks(content.curatedLooks.map(createCardForm));
+            setHeroSlides(content.heroSlides.map(createHeroSlideForm));
+            setCategoryItems(content.categoryItems.map(createCategoryItemForm));
         };
 
         const loadFromServer = async () => {
@@ -98,57 +123,168 @@ function HandleHome({ isDark }) {
         );
     };
 
-    const handleSubmit = async (event) => {
-        event.preventDefault();
+    const updateHeroSlideField = (index, field, value) => {
+        setHeroSlides((previous) =>
+            previous.map((slide, currentIndex) =>
+                currentIndex === index ? { ...slide, [field]: value } : slide
+            )
+        );
+    };
 
+    const updateCategoryItemField = (index, field, value) => {
+        setCategoryItems((previous) =>
+            previous.map((item, currentIndex) =>
+                currentIndex === index ? { ...item, [field]: value } : item
+            )
+        );
+    };
+
+    const persistHomeContent = async (updates, successMessage, failureMessage) => {
         try {
-            await updateHomeContent({
-                featuredCards: featuredCards.map((card, index) => ({
-                    id: index + 1,
-                    title: card.title,
-                    subtitle: card.subtitle,
-                    image: card.image,
-                    product: {
-                        ...homeContentDefaults.featuredCards[index].product,
-                        ...card.product,
-                        id: index + 1,
-                        originalPrice: toNumber(card.product.originalPrice, homeContentDefaults.featuredCards[index].product.originalPrice),
-                        offerPrice: toNumber(card.product.offerPrice, homeContentDefaults.featuredCards[index].product.offerPrice),
-                        discountPercent: toNumber(card.product.discountPercent, homeContentDefaults.featuredCards[index].product.discountPercent),
-                        sellerRating: toNumber(card.product.sellerRating, homeContentDefaults.featuredCards[index].product.sellerRating),
-                        availableColors: toList(card.product.availableColors),
-                        sizes: toList(card.product.sizes),
-                        images: [card.product.imageOne, card.product.imageTwo, card.product.imageThree, card.product.imageFour].filter(Boolean),
-                    },
-                })),
-                curatedLooks: curatedLooks.map((card, index) => ({
-                    id: index + 3,
-                    title: card.title,
-                    subtitle: card.subtitle,
-                    image: card.image,
-                    product: {
-                        ...homeContentDefaults.curatedLooks[index].product,
-                        ...card.product,
-                        id: index + 3,
-                        originalPrice: toNumber(card.product.originalPrice, homeContentDefaults.curatedLooks[index].product.originalPrice),
-                        offerPrice: toNumber(card.product.offerPrice, homeContentDefaults.curatedLooks[index].product.offerPrice),
-                        discountPercent: toNumber(card.product.discountPercent, homeContentDefaults.curatedLooks[index].product.discountPercent),
-                        sellerRating: toNumber(card.product.sellerRating, homeContentDefaults.curatedLooks[index].product.sellerRating),
-                        availableColors: toList(card.product.availableColors),
-                        sizes: toList(card.product.sizes),
-                        images: [card.product.imageOne, card.product.imageTwo, card.product.imageThree, card.product.imageFour].filter(Boolean),
-                    },
-                })),
-            });
-
-            const successMessage = "Home content saved for all users.";
+            await updateHomeContent(updates);
             setMessage(successMessage);
             window.alert(successMessage);
         } catch (error) {
-            const errorMessage = error.message || "Unable to save home content for all users.";
+            const errorMessage = error.message || failureMessage;
             setMessage(errorMessage);
             window.alert(errorMessage);
         }
+    };
+
+    const serializeFeaturedCards = () =>
+        featuredCards.map((card, index) => ({
+            id: index + 1,
+            title: card.title,
+            subtitle: card.subtitle,
+            image: card.image,
+            product: {
+                ...homeContentDefaults.featuredCards[index].product,
+                ...card.product,
+                id: index + 1,
+                originalPrice: toNumber(card.product.originalPrice, homeContentDefaults.featuredCards[index].product.originalPrice),
+                offerPrice: toNumber(card.product.offerPrice, homeContentDefaults.featuredCards[index].product.offerPrice),
+                discountPercent: toNumber(card.product.discountPercent, homeContentDefaults.featuredCards[index].product.discountPercent),
+                sellerRating: toNumber(card.product.sellerRating, homeContentDefaults.featuredCards[index].product.sellerRating),
+                availableColors: toList(card.product.availableColors),
+                sizes: toList(card.product.sizes),
+                images: [card.product.imageOne, card.product.imageTwo, card.product.imageThree, card.product.imageFour].filter(Boolean),
+            },
+        }));
+
+    const serializeCuratedLooks = () =>
+        curatedLooks.map((card, index) => ({
+            id: index + 3,
+            title: card.title,
+            subtitle: card.subtitle,
+            image: card.image,
+            product: {
+                ...homeContentDefaults.curatedLooks[index].product,
+                ...card.product,
+                id: index + 3,
+                originalPrice: toNumber(card.product.originalPrice, homeContentDefaults.curatedLooks[index].product.originalPrice),
+                offerPrice: toNumber(card.product.offerPrice, homeContentDefaults.curatedLooks[index].product.offerPrice),
+                discountPercent: toNumber(card.product.discountPercent, homeContentDefaults.curatedLooks[index].product.discountPercent),
+                sellerRating: toNumber(card.product.sellerRating, homeContentDefaults.curatedLooks[index].product.sellerRating),
+                availableColors: toList(card.product.availableColors),
+                sizes: toList(card.product.sizes),
+                images: [card.product.imageOne, card.product.imageTwo, card.product.imageThree, card.product.imageFour].filter(Boolean),
+            },
+        }));
+
+    const serializeHeroSlides = () =>
+        heroSlides.map((slide, index) => ({
+            id: index + 1,
+            title: slide.title,
+            subtitle: slide.subtitle,
+            offer: slide.offer,
+            cta: slide.cta,
+            image: slide.image,
+            targetPath: slide.targetPath,
+        }));
+
+    const serializeCategoryItems = () =>
+        categoryItems.map((item, index) => ({
+            id: index + 1,
+            title: item.title,
+            image: item.image,
+            targetPath: item.targetPath,
+        }));
+
+    const saveFeaturedCards = async () => {
+        await persistHomeContent(
+            { featuredCards: serializeFeaturedCards() },
+            "Featured cards saved successfully.",
+            "Unable to save featured cards."
+        );
+    };
+
+    const saveCuratedLooks = async () => {
+        await persistHomeContent(
+            { curatedLooks: serializeCuratedLooks() },
+            "Curated looks saved successfully.",
+            "Unable to save curated looks."
+        );
+    };
+
+    const saveHeroSlides = async () => {
+        await persistHomeContent(
+            { heroSlides: serializeHeroSlides() },
+            "Hero slides saved successfully.",
+            "Unable to save hero slides."
+        );
+    };
+
+    const saveCategoryItems = async () => {
+        await persistHomeContent(
+            { categoryItems: serializeCategoryItems() },
+            "Category items saved successfully.",
+            "Unable to save category items."
+        );
+    };
+
+    const handleSubmit = async (event) => {
+        event.preventDefault();
+        await saveFeaturedCards();
+    };
+
+    const openHeroEditor = (index) => {
+        setEditingHeroIndex(index);
+        window.requestAnimationFrame(() => {
+            heroEditorRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+        });
+    };
+
+    const openCategoryEditor = (index) => {
+        setEditingCategoryIndex(index);
+        window.requestAnimationFrame(() => {
+            categoryEditorRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+        });
+    };
+
+    const addHeroSlide = () => {
+        setHeroSlides((previous) => [...previous, createHeroSlideForm({ id: previous.length + 1 })]);
+        setEditingHeroIndex(heroSlides.length);
+        window.requestAnimationFrame(() => {
+            heroEditorRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+        });
+    };
+
+    const deleteHeroSlide = (index) => {
+        setHeroSlides((previous) => previous.filter((_, currentIndex) => currentIndex !== index));
+        setEditingHeroIndex((previous) => Math.max(0, Math.min(previous, heroSlides.length - 2)));
+    };
+
+    const addCategoryItem = () => {
+        setCategoryItems((previous) => [...previous, createCategoryItemForm({ id: previous.length + 1 })]);
+        setEditingCategoryIndex(categoryItems.length);
+        window.requestAnimationFrame(() => {
+            categoryEditorRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+        });
+    };
+
+    const deleteCategoryItem = (index) => {
+        setCategoryItems((previous) => previous.filter((_, currentIndex) => currentIndex !== index));
+        setEditingCategoryIndex((previous) => Math.max(0, Math.min(previous, categoryItems.length - 2)));
     };
 
     const handleReset = async () => {
@@ -156,6 +292,8 @@ function HandleHome({ isDark }) {
             const content = await resetHomeContent();
             setFeaturedCards(content.featuredCards.map(createCardForm));
             setCuratedLooks(content.curatedLooks.map(createCardForm));
+            setHeroSlides(content.heroSlides.map(createHeroSlideForm));
+            setCategoryItems(content.categoryItems.map(createCategoryItemForm));
             setMessage("Home content reset for all users.");
         } catch (error) {
             setMessage(error.message || "Unable to reset home content for all users.");
@@ -245,6 +383,58 @@ function HandleHome({ isDark }) {
         </div>
     );
 
+    const renderHeroSlideFields = (index, slide) => (
+        <div className="grid gap-4 md:grid-cols-2">
+            <label className="space-y-2 text-sm md:col-span-2">
+                <span className="font-medium">Title</span>
+                <input value={slide.title} onChange={(event) => updateHeroSlideField(index, "title", event.target.value)} className={inputClass} />
+            </label>
+            <label className="space-y-2 text-sm">
+                <span className="font-medium">Subtitle</span>
+                <input value={slide.subtitle} onChange={(event) => updateHeroSlideField(index, "subtitle", event.target.value)} className={inputClass} />
+            </label>
+            <label className="space-y-2 text-sm">
+                <span className="font-medium">Offer</span>
+                <input value={slide.offer} onChange={(event) => updateHeroSlideField(index, "offer", event.target.value)} className={inputClass} />
+            </label>
+            <label className="space-y-2 text-sm md:col-span-2">
+                <span className="font-medium">CTA Text</span>
+                <input value={slide.cta} onChange={(event) => updateHeroSlideField(index, "cta", event.target.value)} className={inputClass} />
+            </label>
+            <label className="space-y-2 text-sm md:col-span-2">
+                <span className="font-medium">Image URL</span>
+                <input value={slide.image} onChange={(event) => updateHeroSlideField(index, "image", event.target.value)} className={inputClass} />
+            </label>
+            <label className="space-y-2 text-sm md:col-span-2">
+                <span className="font-medium">Target Page</span>
+                <select value={slide.targetPath} onChange={(event) => updateHeroSlideField(index, "targetPath", event.target.value)} className={inputClass}>
+                    <option value="/constitutional-edition">Constitutional Edition</option>
+                    <option value="/custom-edition">Custom Edition</option>
+                </select>
+            </label>
+        </div>
+    );
+
+    const renderCategoryFields = (index, item) => (
+        <div className="grid gap-4 md:grid-cols-2">
+            <label className="space-y-2 text-sm md:col-span-2">
+                <span className="font-medium">Title</span>
+                <input value={item.title} onChange={(event) => updateCategoryItemField(index, "title", event.target.value)} className={inputClass} />
+            </label>
+            <label className="space-y-2 text-sm md:col-span-2">
+                <span className="font-medium">Image URL</span>
+                <input value={item.image} onChange={(event) => updateCategoryItemField(index, "image", event.target.value)} className={inputClass} />
+            </label>
+            <label className="space-y-2 text-sm md:col-span-2">
+                <span className="font-medium">Target Page</span>
+                <select value={item.targetPath} onChange={(event) => updateCategoryItemField(index, "targetPath", event.target.value)} className={inputClass}>
+                    <option value="/constitutional-edition">Constitutional Edition</option>
+                    <option value="/custom-edition">Custom Edition</option>
+                </select>
+            </label>
+        </div>
+    );
+
     return (
         <main className={pageClass}>
             <section className="mx-auto max-w-7xl">
@@ -255,7 +445,7 @@ function HandleHome({ isDark }) {
                         </p>
                         <h1 className="mt-3 text-4xl font-black sm:text-5xl">Handle Home</h1>
                         <p className={isDark ? "mt-3 max-w-2xl text-sm leading-7 text-zinc-300" : "mt-3 max-w-2xl text-sm leading-7 text-zinc-600"}>
-                            Edit the two featured cards and the five curated looks that appear on the home page.
+                            Edit hero slides, category items, featured cards, and the curated looks that appear on the home page.
                         </p>
                     </div>
                     <div className={isDark ? "rounded-2xl border border-zinc-800 bg-zinc-900 px-4 py-3 text-sm text-zinc-300" : "rounded-2xl border border-zinc-200 bg-white px-4 py-3 text-sm text-zinc-700"}>
@@ -268,6 +458,104 @@ function HandleHome({ isDark }) {
                         {message}
                     </div>
                 ) : null}
+
+                <div className="grid gap-6 lg:grid-cols-2">
+                    <section ref={heroEditorRef} className={cardClass}>
+                        <div className="flex items-center justify-between gap-3">
+                            <div>
+                                <p className="text-xs font-semibold uppercase tracking-[0.22em] text-zinc-500">Hero slides</p>
+                                <h2 className="mt-2 text-2xl font-semibold">Add, edit, delete</h2>
+                            </div>
+                            <button type="button" onClick={addHeroSlide} className="rounded-full bg-cyan-500 px-4 py-2 text-xs font-semibold text-white">
+                                Add Hero Slide
+                            </button>
+                        </div>
+
+                        <div className="mt-5 space-y-3">
+                            {heroSlides.map((slide, index) => (
+                                <div key={`${slide.id || index}`} className={isDark ? "rounded-2xl border border-zinc-800 bg-zinc-950 p-4" : "rounded-2xl border border-zinc-200 bg-zinc-50 p-4"}>
+                                    <div className="flex items-start justify-between gap-3">
+                                        <div>
+                                            <p className="text-sm font-semibold">{slide.title || `Slide ${index + 1}`}</p>
+                                            <p className={isDark ? "text-xs text-zinc-400" : "text-xs text-zinc-600"}>{slide.targetPath === "/custom-edition" ? "Custom Edition" : "Constitutional Edition"}</p>
+                                        </div>
+                                        <div className="flex gap-2">
+                                            <button type="button" onClick={() => openHeroEditor(index)} className={editingHeroIndex === index ? "rounded-full bg-cyan-500 px-3 py-1 text-xs font-semibold text-white" : "rounded-full border border-cyan-500 px-3 py-1 text-xs font-semibold text-cyan-500"}>
+                                                Edit
+                                            </button>
+                                            <button type="button" onClick={() => deleteHeroSlide(index)} className="rounded-full border border-red-400 px-3 py-1 text-xs font-semibold text-red-500">
+                                                Delete
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+
+                        {heroSlides[editingHeroIndex] ? (
+                            <div className={isDark ? "mt-5 rounded-3xl border border-zinc-800 bg-zinc-950 p-4" : "mt-5 rounded-3xl border border-zinc-200 bg-zinc-50 p-4"}>
+                                <p className="text-sm font-semibold">Editing Slide {editingHeroIndex + 1}</p>
+                                <div className="mt-4">
+                                    {renderHeroSlideFields(editingHeroIndex, heroSlides[editingHeroIndex])}
+                                </div>
+                            </div>
+                        ) : null}
+
+                        <div className="mt-5 flex flex-wrap gap-3">
+                            <button type="button" onClick={saveHeroSlides} className="rounded-full bg-black px-5 py-3 text-sm font-semibold text-white dark:bg-white dark:text-black">
+                                Save Hero Slides
+                            </button>
+                        </div>
+                    </section>
+
+                    <section ref={categoryEditorRef} className={cardClass}>
+                        <div className="flex items-center justify-between gap-3">
+                            <div>
+                                <p className="text-xs font-semibold uppercase tracking-[0.22em] text-zinc-500">Category items</p>
+                                <h2 className="mt-2 text-2xl font-semibold">Add, edit, delete</h2>
+                            </div>
+                            <button type="button" onClick={addCategoryItem} className="rounded-full bg-cyan-500 px-4 py-2 text-xs font-semibold text-white">
+                                Add Category Item
+                            </button>
+                        </div>
+
+                        <div className="mt-5 space-y-3">
+                            {categoryItems.map((item, index) => (
+                                <div key={`${item.id || index}`} className={isDark ? "rounded-2xl border border-zinc-800 bg-zinc-950 p-4" : "rounded-2xl border border-zinc-200 bg-zinc-50 p-4"}>
+                                    <div className="flex items-start justify-between gap-3">
+                                        <div>
+                                            <p className="text-sm font-semibold">{item.title || `Item ${index + 1}`}</p>
+                                            <p className={isDark ? "text-xs text-zinc-400" : "text-xs text-zinc-600"}>{item.targetPath === "/custom-edition" ? "Custom Edition" : "Constitutional Edition"}</p>
+                                        </div>
+                                        <div className="flex gap-2">
+                                            <button type="button" onClick={() => openCategoryEditor(index)} className={editingCategoryIndex === index ? "rounded-full bg-cyan-500 px-3 py-1 text-xs font-semibold text-white" : "rounded-full border border-cyan-500 px-3 py-1 text-xs font-semibold text-cyan-500"}>
+                                                Edit
+                                            </button>
+                                            <button type="button" onClick={() => deleteCategoryItem(index)} className="rounded-full border border-red-400 px-3 py-1 text-xs font-semibold text-red-500">
+                                                Delete
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+
+                        {categoryItems[editingCategoryIndex] ? (
+                            <div className={isDark ? "mt-5 rounded-3xl border border-zinc-800 bg-zinc-950 p-4" : "mt-5 rounded-3xl border border-zinc-200 bg-zinc-50 p-4"}>
+                                <p className="text-sm font-semibold">Editing Category Item {editingCategoryIndex + 1}</p>
+                                <div className="mt-4">
+                                    {renderCategoryFields(editingCategoryIndex, categoryItems[editingCategoryIndex])}
+                                </div>
+                            </div>
+                        ) : null}
+
+                        <div className="mt-5 flex flex-wrap gap-3">
+                            <button type="button" onClick={saveCategoryItems} className="rounded-full bg-black px-5 py-3 text-sm font-semibold text-white dark:bg-white dark:text-black">
+                                Save Category Items
+                            </button>
+                        </div>
+                    </section>
+                </div>
 
                 <div className="grid gap-6 lg:grid-cols-[1.15fr_0.85fr]">
                     <section className={cardClass}>
@@ -303,11 +591,17 @@ function HandleHome({ isDark }) {
                                         </div>
                                     ))}
                                 </div>
+
+                                <div className="mt-6 flex flex-wrap gap-3">
+                                    <button type="button" onClick={saveCuratedLooks} className="rounded-full bg-black px-5 py-3 text-sm font-semibold text-white dark:bg-white dark:text-black">
+                                        Save Curated Looks
+                                    </button>
+                                </div>
                             </div>
 
                             <div className="flex flex-wrap gap-3 pt-2">
                                 <button type="submit" className="rounded-full bg-black px-5 py-3 text-sm font-semibold text-white dark:bg-white dark:text-black">
-                                    Save Home Content
+                                    Save Featured Cards
                                 </button>
                                 <button type="button" onClick={handleReset} className={isDark ? "rounded-full border border-zinc-700 px-5 py-3 text-sm font-semibold text-zinc-200" : "rounded-full border border-zinc-300 px-5 py-3 text-sm font-semibold text-zinc-700"}>
                                     Reset Home Content

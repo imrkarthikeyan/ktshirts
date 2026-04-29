@@ -412,6 +412,25 @@ function AdminDashboard({ isDark }) {
                 <section className={isDark ? "mt-8 rounded-3xl border border-zinc-800 bg-zinc-900 p-5 shadow-xl shadow-black/20" : "mt-8 rounded-3xl border border-zinc-200 bg-white p-5 shadow-xl shadow-zinc-200/60"}>
                     <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                         <div>
+                            <p className="text-xs font-semibold uppercase tracking-[0.22em] text-zinc-500">Contact controls</p>
+                            <h2 className="mt-2 text-2xl font-semibold">Handle Contact</h2>
+                        </div>
+                        <button
+                            type="button"
+                            onClick={() => navigate("/admin/handle-contact")}
+                            className="rounded-full bg-cyan-500 px-5 py-3 text-sm font-semibold text-white"
+                        >
+                            Edit Contact Page Details
+                        </button>
+                    </div>
+                    <p className={isDark ? "mt-4 text-sm text-zinc-400" : "mt-4 text-sm text-zinc-600"}>
+                        Update the public contact page title, description, email, phone, WhatsApp, hours, and address.
+                    </p>
+                </section>
+
+                <section className={isDark ? "mt-8 rounded-3xl border border-zinc-800 bg-zinc-900 p-5 shadow-xl shadow-black/20" : "mt-8 rounded-3xl border border-zinc-200 bg-white p-5 shadow-xl shadow-zinc-200/60"}>
+                    <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+                        <div>
                             <p className="text-xs font-semibold uppercase tracking-[0.22em] text-zinc-500">Home controls</p>
                             <h2 className="mt-2 text-2xl font-semibold">Handle Home</h2>
                         </div>
