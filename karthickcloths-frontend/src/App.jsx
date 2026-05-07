@@ -21,6 +21,8 @@ import AdminDashboard from "./pages/Admin/AdminDashboard";
 import HandleHome from "./pages/Admin/HandleHome";
 import HandleFooter from "./pages/Admin/HandleFooter";
 import HandleContact from "./pages/Admin/HandleContact";
+import HandleAbout from "./pages/Admin/HandleAbout";
+import HandleTerms from "./pages/Admin/HandleTerms";
 import CustomEditionOrders from "./pages/Admin/CustomEditionOrders";
 import ConstitutionalEdition from "./pages/ConstitutionalEdition/ConstitutionalEdition";
 import ConstitutionalEditionProductDetails from "./pages/ConstitutionalEdition/ConstitutionalEditionProductDetails";
@@ -29,6 +31,8 @@ import CustomEditionSuccess from "./pages/CustomEditionSuccess";
 import CustomEditionTracking from "./pages/CustomEditionTracking";
 import HomeProductDetails from "./pages/HomeProductDetails";
 import StoreLocator from "./pages/StoreLocator";
+import About from "./pages/About";
+import Terms from "./pages/Terms";
 
 function App() {
     const [isDark, setIsDark] = useState(() => {
@@ -99,6 +103,8 @@ function App() {
                 <Route path="/custom-edition/track" element={<CustomEditionTracking isDark={isDark} />} />
                 <Route path="/store-locator" element={<StoreLocator isDark={isDark} />} />
                 <Route path="/search" element={<Search isDark={isDark} />} />
+                <Route path="/about" element={<About isDark={isDark} />} />
+                <Route path="/terms" element={<Terms isDark={isDark} />} />
                 <Route
                     path="/admin"
                     element={
@@ -128,6 +134,22 @@ function App() {
                     element={
                         <ProtectedRoute requireAdmin>
                             <HandleHome isDark={isDark} />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/admin/handle-about"
+                    element={
+                        <ProtectedRoute requireAdmin>
+                            <HandleAbout isDark={isDark} />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/admin/handle-terms"
+                    element={
+                        <ProtectedRoute requireAdmin>
+                            <HandleTerms isDark={isDark} />
                         </ProtectedRoute>
                     }
                 />

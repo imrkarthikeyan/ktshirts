@@ -9,45 +9,58 @@ export const CartProvider = ({ children }) => {
     const [cartTotal, setCartTotal] = useState(0);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
-    const { token } = useAuth();
+    const { token, isAuthenticated } = useAuth();
 
     // Fetch cart items when component mounts or token changes
     useEffect(() => {
-        if (token) {
+        if (isAuthenticated && token) {
             fetchCartItems();
         } else {
             setCartItems([]);
             setCartTotal(0);
         }
-    }, [token]);
+    }, [token, isAuthenticated]);
 
     const fetchCartItems = async () => {
+        // Validate token exists before making request
+        if (!token) {
+            setError('Not authenticated');
+            return;
+        }
+
         setLoading(true);
         setError(null);
         try {
             const response = await fetch(`${API_BASE_URL}/cart/items`, {
                 headers: {
                     'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json',
                 },
             });
 
             const data = await response.json();
 
             if (!response.ok) {
-                throw new Error(data.message || 'Failed to fetch cart items');
+                throw new Error(data.message || `Failed to fetch cart items (${response.status})`);
             }
 
             setCartItems(data.items || []);
             setCartTotal(data.total || 0);
         } catch (err) {
             setError(err.message);
-            console.error('Error fetching cart:', err);
+            console.error('[CartContext] Error fetching cart:', err);
         } finally {
             setLoading(false);
         }
     };
 
     const addToCart = async (cartItemData) => {
+        if (!token) {
+            const err = new Error('Authentication required. Please login first.');
+            setError(err.message);
+            throw err;
+        }
+
         setLoading(true);
         setError(null);
         try {
@@ -63,7 +76,7 @@ export const CartProvider = ({ children }) => {
             const data = await response.json();
 
             if (!response.ok) {
-                throw new Error(data.message || 'Failed to add to cart');
+                throw new Error(data.message || `Failed to add to cart (${response.status})`);
             }
 
             // Refresh cart items
@@ -71,6 +84,7 @@ export const CartProvider = ({ children }) => {
             return data.data;
         } catch (err) {
             setError(err.message);
+            console.error('[CartContext] Error adding to cart:', err);
             throw err;
         } finally {
             setLoading(false);

@@ -65,6 +65,7 @@ function Footer({ isDark }) {
                             {/* <Link to="/women" className="transition hover:underline"></Link>
                             <Link to="/kids" className="transition hover:underline">Kids Wears</Link> */}
                             <Link to="/search" className="transition hover:underline">Search</Link>
+                            <Link to="/about" className="transition hover:underline">About Us</Link>
                             <Link to="/wishlist" className="transition hover:underline">Wishlist</Link>
                             <Link to="/cart" className="transition hover:underline">My Cart</Link>
                             <Link to="/profile" className="transition hover:underline">My Account</Link>
@@ -94,8 +95,8 @@ function Footer({ isDark }) {
                 <div className={isDark ? "mt-8 flex flex-col items-center gap-3 border-t border-zinc-800 pt-5 text-center text-xs text-zinc-400 md:mt-10 md:flex-row md:justify-between md:text-left" : "mt-8 flex flex-col items-center gap-3 border-t border-zinc-300 pt-5 text-center text-xs text-zinc-500 md:mt-10 md:flex-row md:justify-between md:text-left"}>
                     <p className="leading-5">{copyrightText}</p>
                     <div className="flex flex-wrap items-center justify-center gap-3 md:justify-end md:gap-4">
-                        <a href="#" className="transition hover:underline">Privacy Policy</a>
-                        <a href="#" className="transition hover:underline">Terms & Conditions</a>
+                        <Link to="/about" className="transition hover:underline">About Us</Link>
+                        <Link to="/terms" className="transition hover:underline">Terms & Conditions</Link>
                         <a href="#" className="transition hover:underline">Shipping & Returns</a>
                     </div>
                 </div>

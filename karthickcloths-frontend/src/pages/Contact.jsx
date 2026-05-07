@@ -47,29 +47,29 @@ function Contact({ isDark }) {
 
                 <div className="grid gap-6 lg:grid-cols-[1fr_0.9fr]">
                     <div className={isDark ? "rounded-3xl border border-zinc-800 bg-zinc-900 p-6 shadow-xl shadow-black/20" : "rounded-3xl border border-zinc-200 bg-white p-6 shadow-xl shadow-zinc-200/70"}>
-                        <form className="space-y-5">
+                        <form action="https://formspree.io/f/xrejzgje" method="POST" className="space-y-5">
                             <div className="grid gap-5 sm:grid-cols-2">
                                 <div>
                                     <label className={isDark ? "mb-2 block text-sm font-semibold text-zinc-200" : "mb-2 block text-sm font-semibold text-zinc-700"}>Name</label>
-                                    <input type="text" placeholder="Your name" className={isDark ? "w-full rounded-xl border border-zinc-700 bg-zinc-950 px-4 py-3 text-sm text-zinc-100 outline-none placeholder:text-zinc-500 focus:border-cyan-500" : "w-full rounded-xl border border-zinc-300 bg-zinc-50 px-4 py-3 text-sm text-zinc-900 outline-none placeholder:text-zinc-500 focus:border-zinc-900"} />
+                                    <input name="name" type="text" placeholder="Your name" className={isDark ? "w-full rounded-xl border border-zinc-700 bg-zinc-950 px-4 py-3 text-sm text-zinc-100 outline-none placeholder:text-zinc-500 focus:border-cyan-500" : "w-full rounded-xl border border-zinc-300 bg-zinc-50 px-4 py-3 text-sm text-zinc-900 outline-none placeholder:text-zinc-500 focus:border-zinc-900"} />
                                 </div>
                                 <div>
                                     <label className={isDark ? "mb-2 block text-sm font-semibold text-zinc-200" : "mb-2 block text-sm font-semibold text-zinc-700"}>Email</label>
-                                    <input type="email" placeholder="you@example.com" className={isDark ? "w-full rounded-xl border border-zinc-700 bg-zinc-950 px-4 py-3 text-sm text-zinc-100 outline-none placeholder:text-zinc-500 focus:border-cyan-500" : "w-full rounded-xl border border-zinc-300 bg-zinc-50 px-4 py-3 text-sm text-zinc-900 outline-none placeholder:text-zinc-500 focus:border-zinc-900"} />
+                                    <input name="email" type="email" placeholder="you@example.com" className={isDark ? "w-full rounded-xl border border-zinc-700 bg-zinc-950 px-4 py-3 text-sm text-zinc-100 outline-none placeholder:text-zinc-500 focus:border-cyan-500" : "w-full rounded-xl border border-zinc-300 bg-zinc-50 px-4 py-3 text-sm text-zinc-900 outline-none placeholder:text-zinc-500 focus:border-zinc-900"} />
                                 </div>
                             </div>
 
                             <div>
                                 <label className={isDark ? "mb-2 block text-sm font-semibold text-zinc-200" : "mb-2 block text-sm font-semibold text-zinc-700"}>Subject</label>
-                                <input type="text" placeholder="How can we help?" className={isDark ? "w-full rounded-xl border border-zinc-700 bg-zinc-950 px-4 py-3 text-sm text-zinc-100 outline-none placeholder:text-zinc-500 focus:border-cyan-500" : "w-full rounded-xl border border-zinc-300 bg-zinc-50 px-4 py-3 text-sm text-zinc-900 outline-none placeholder:text-zinc-500 focus:border-zinc-900"} />
+                                <input name="subject" type="text" placeholder="How can we help?" className={isDark ? "w-full rounded-xl border border-zinc-700 bg-zinc-950 px-4 py-3 text-sm text-zinc-100 outline-none placeholder:text-zinc-500 focus:border-cyan-500" : "w-full rounded-xl border border-zinc-300 bg-zinc-50 px-4 py-3 text-sm text-zinc-900 outline-none placeholder:text-zinc-500 focus:border-zinc-900"} />
                             </div>
 
                             <div>
                                 <label className={isDark ? "mb-2 block text-sm font-semibold text-zinc-200" : "mb-2 block text-sm font-semibold text-zinc-700"}>Message</label>
-                                <textarea rows="6" placeholder="Write your message here..." className={isDark ? "w-full rounded-xl border border-zinc-700 bg-zinc-950 px-4 py-3 text-sm text-zinc-100 outline-none placeholder:text-zinc-500 focus:border-cyan-500" : "w-full rounded-xl border border-zinc-300 bg-zinc-50 px-4 py-3 text-sm text-zinc-900 outline-none placeholder:text-zinc-500 focus:border-zinc-900"} />
+                                <textarea name="message" rows="6" placeholder="Write your message here..." className={isDark ? "w-full rounded-xl border border-zinc-700 bg-zinc-950 px-4 py-3 text-sm text-zinc-100 outline-none placeholder:text-zinc-500 focus:border-cyan-500" : "w-full rounded-xl border border-zinc-300 bg-zinc-50 px-4 py-3 text-sm text-zinc-900 outline-none placeholder:text-zinc-500 focus:border-zinc-900"} />
                             </div>
 
-                            <button type="button" className="rounded-xl bg-cyan-500 px-5 py-3 text-sm font-semibold text-white transition hover:bg-cyan-600">
+                            <button type="submit" className="rounded-xl bg-cyan-500 px-5 py-3 text-sm font-semibold text-white transition hover:bg-cyan-600">
                                 Send Message
                             </button>
                         </form>

@@ -4,6 +4,7 @@ import { menProductsFallback } from "./menProductsData";
 import { useAuth } from "../../context/AuthContext";
 import { useWishlist } from "../../context/WishlistContext";
 import { getCatalogProducts } from "../../services/catalogStore";
+import WishlistHeartIcon from "../../components/WishlistHeartIcon";
 
 const priceRanges = [
     { label: "Under ₹400", min: 0, max: 400 },
@@ -411,7 +412,7 @@ function MenWear({
                                     className={`wishlist-heart-btn absolute right-3 top-3 z-20 ${isWishlisted(product.id, "men") ? "wishlist-heart-active" : ""}`}
                                     aria-label={`Toggle wishlist for ${product.name}`}
                                 >
-                                    {isWishlisted(product.id, "men") ? "♥" : "♡"}
+                                    <WishlistHeartIcon active={isWishlisted(product.id, "men")} className="h-5 w-5" />
                                 </button>
                                 <button onClick={() => onSelectProduct(product.id)} className="w-full text-left">
                                     <div className="relative h-48 overflow-hidden sm:h-64 lg:h-72">

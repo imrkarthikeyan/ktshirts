@@ -4,6 +4,7 @@ import { kidsProductsFallback } from "./kidsProductsData";
 import { useAuth } from "../../context/AuthContext";
 import { useWishlist } from "../../context/WishlistContext";
 import { getCatalogProducts } from "../../services/catalogStore";
+import WishlistHeartIcon from "../../components/WishlistHeartIcon";
 
 const priceRanges = [
     { label: "Under ₹400", min: 0, max: 400 },
@@ -400,7 +401,7 @@ function KidsWear({ isDark, onSelectProduct }) {
                                     className={`wishlist-heart-btn absolute right-3 top-3 z-20 ${isWishlisted(product.id, "kids") ? "wishlist-heart-active" : ""}`}
                                     aria-label={`Toggle wishlist for ${product.name}`}
                                 >
-                                    {isWishlisted(product.id, "kids") ? "♥" : "♡"}
+                                    <WishlistHeartIcon active={isWishlisted(product.id, "kids")} className="h-5 w-5" />
                                 </button>
                                 <button onClick={() => onSelectProduct(product.id)} className="w-full text-left">
                                     <div className="relative h-48 overflow-hidden sm:h-64 lg:h-72">

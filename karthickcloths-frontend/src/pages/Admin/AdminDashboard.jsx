@@ -446,6 +446,44 @@ function AdminDashboard({ isDark }) {
                         Manage the two featured cards and the five curated looks shown on the home page.
                     </p>
                 </section>
+
+                <section className={isDark ? "mt-8 rounded-3xl border border-zinc-800 bg-zinc-900 p-5 shadow-xl shadow-black/20" : "mt-8 rounded-3xl border border-zinc-200 bg-white p-5 shadow-xl shadow-zinc-200/60"}>
+                    <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+                        <div>
+                            <p className="text-xs font-semibold uppercase tracking-[0.22em] text-zinc-500">About controls</p>
+                            <h2 className="mt-2 text-2xl font-semibold">Handle About Us</h2>
+                        </div>
+                        <button
+                            type="button"
+                            onClick={() => navigate("/admin/handle-about")}
+                            className="rounded-full bg-emerald-500 px-5 py-3 text-sm font-semibold text-white"
+                        >
+                            Edit About Us Page
+                        </button>
+                    </div>
+                    <p className={isDark ? "mt-4 text-sm text-zinc-400" : "mt-4 text-sm text-zinc-600"}>
+                        Customize the About Us page with mission, vision, core values, and team information.
+                    </p>
+                </section>
+
+                <section className={isDark ? "mt-8 rounded-3xl border border-zinc-800 bg-zinc-900 p-5 shadow-xl shadow-black/20" : "mt-8 rounded-3xl border border-zinc-200 bg-white p-5 shadow-xl shadow-zinc-200/60"}>
+                    <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+                        <div>
+                            <p className="text-xs font-semibold uppercase tracking-[0.22em] text-zinc-500">Terms controls</p>
+                            <h2 className="mt-2 text-2xl font-semibold">Handle Terms & Conditions</h2>
+                        </div>
+                        <button
+                            type="button"
+                            onClick={() => navigate("/admin/handle-terms")}
+                            className="rounded-full bg-amber-500 px-5 py-3 text-sm font-semibold text-white"
+                        >
+                            Edit Terms & Conditions
+                        </button>
+                    </div>
+                    <p className={isDark ? "mt-4 text-sm text-zinc-400" : "mt-4 text-sm text-zinc-600"}>
+                        Manage all terms and conditions sections. Add, edit, or remove any section as needed.
+                    </p>
+                </section>
             </section>
         </main>
     );

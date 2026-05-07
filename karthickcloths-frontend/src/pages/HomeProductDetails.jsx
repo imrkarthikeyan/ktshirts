@@ -5,6 +5,7 @@ import { useAuth } from "../context/AuthContext";
 import { useCart } from "../context/CartContext";
 import { useWishlist } from "../context/WishlistContext";
 import { getHomeProductById, syncHomeContentFromServer } from "../services/homeStore";
+import WishlistHeartIcon from "../components/WishlistHeartIcon";
 
 function HomeProductDetails({ isDark }) {
     const { prod_id } = useParams();
@@ -227,7 +228,7 @@ function HomeProductDetails({ isDark }) {
                                 className={`wishlist-heart-btn ${isWishlisted(product.id, "home") ? "wishlist-heart-active" : ""}`}
                                 aria-label="Toggle wishlist"
                             >
-                                {isWishlisted(product.id, "home") ? "♥" : "♡"}
+                                <WishlistHeartIcon active={isWishlisted(product.id, "home")} className="h-5 w-5" />
                             </button>
                         </div>
 

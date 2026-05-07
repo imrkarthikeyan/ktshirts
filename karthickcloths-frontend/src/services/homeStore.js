@@ -372,21 +372,21 @@ const normalizeHomeContent = (value = {}) => {
         }))
         : defaultHomeContent.categoryItems;
 
-    const featuredCards = Array.isArray(value.featuredCards) && value.featuredCards.length === 2
+    const featuredCards = Array.isArray(value.featuredCards)
         ? value.featuredCards.map((card, index) => ({
-            ...defaultHomeContent.featuredCards[index],
+            ...defaultHomeContent.featuredCards[index % defaultHomeContent.featuredCards.length],
             ...card,
-            id: Number(card.id) || defaultHomeContent.featuredCards[index].id,
-            product: makeProduct({ ...defaultHomeContent.featuredCards[index].product, ...(card.product || {}), id: Number(card.id) || defaultHomeContent.featuredCards[index].id }),
+            id: Number(card.id) || defaultHomeContent.featuredCards[index % defaultHomeContent.featuredCards.length].id,
+            product: makeProduct({ ...defaultHomeContent.featuredCards[index % defaultHomeContent.featuredCards.length].product, ...(card.product || {}), id: Number(card.product?.id) || Number(card.id) || defaultHomeContent.featuredCards[index % defaultHomeContent.featuredCards.length].id }),
         }))
         : defaultHomeContent.featuredCards;
 
-    const curatedLooks = Array.isArray(value.curatedLooks) && value.curatedLooks.length === 5
+    const curatedLooks = Array.isArray(value.curatedLooks)
         ? value.curatedLooks.map((card, index) => ({
-            ...defaultHomeContent.curatedLooks[index],
+            ...defaultHomeContent.curatedLooks[index % defaultHomeContent.curatedLooks.length],
             ...card,
-            id: Number(card.id) || defaultHomeContent.curatedLooks[index].id,
-            product: makeProduct({ ...defaultHomeContent.curatedLooks[index].product, ...(card.product || {}), id: Number(card.id) || defaultHomeContent.curatedLooks[index].id }),
+            id: Number(card.id) || defaultHomeContent.curatedLooks[index % defaultHomeContent.curatedLooks.length].id,
+            product: makeProduct({ ...defaultHomeContent.curatedLooks[index % defaultHomeContent.curatedLooks.length].product, ...(card.product || {}), id: Number(card.product?.id) || Number(card.id) || defaultHomeContent.curatedLooks[index % defaultHomeContent.curatedLooks.length].id }),
         }))
         : defaultHomeContent.curatedLooks;
 

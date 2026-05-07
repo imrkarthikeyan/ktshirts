@@ -4,20 +4,18 @@ import { API_BASE_URL, requestSignupOtp as requestOtpApi, verifySignupOtp as ver
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
-    const [user, setUser] = useState(null);
-    const [token, setToken] = useState(localStorage.getItem('authToken'));
+    // Initialize from localStorage immediately
+    const [user, setUser] = useState(() => {
+        const savedUser = localStorage.getItem('user');
+        return savedUser ? JSON.parse(savedUser) : null;
+    });
+
+    const [token, setToken] = useState(() => {
+        return localStorage.getItem('authToken') || null;
+    });
+
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
-
-    // Initialize auth state from localStorage
-    useEffect(() => {
-        const savedToken = localStorage.getItem('authToken');
-        const savedUser = localStorage.getItem('user');
-        if (savedToken && savedUser) {
-            setToken(savedToken);
-            setUser(JSON.parse(savedUser));
-        }
-    }, []);
 
     const signup = async (signupData) => {
         return requestSignupOtp(signupData);
@@ -69,12 +67,27 @@ export const AuthProvider = ({ children }) => {
                 throw new Error(data.message || 'Login failed');
             }
 
+            console.log('[AuthContext] Login successful, received data:', {
+                hasToken: !!data.token,
+                tokenLength: data.token?.length || 0,
+                email: data.email
+            });
+
             // Save token and user info
             localStorage.setItem('authToken', data.token);
             localStorage.setItem('user', JSON.stringify(data));
 
+            console.log('[AuthContext] Token saved to localStorage:', {
+                storedToken: localStorage.getItem('authToken')?.substring(0, 20) + '...',
+                storedUser: localStorage.getItem('user')?.substring(0, 30) + '...'
+            });
+
             setToken(data.token);
             setUser(data);
+
+            console.log('[AuthContext] State updated with token:', {
+                newToken: data.token?.substring(0, 20) + '...'
+            });
 
             return data;
         } catch (err) {

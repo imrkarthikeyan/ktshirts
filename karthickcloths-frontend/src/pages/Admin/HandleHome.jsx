@@ -4,6 +4,7 @@ import { useAuth } from "../../context/AuthContext";
 import { getHomeContent, homeContentDefaults, resetHomeContent, syncHomeContentFromServer, updateHomeContent } from "../../services/homeStore";
 
 const createProductForm = (product = {}) => ({
+    id: product.id || "",
     name: product.name || "",
     description: product.description || "",
     originalPrice: String(product.originalPrice ?? ""),
@@ -24,6 +25,7 @@ const createProductForm = (product = {}) => ({
 });
 
 const createCardForm = (card = {}) => ({
+    id: card.id || card.product?.id || "",
     title: card.title || "",
     subtitle: card.subtitle || "",
     image: card.image || "",
@@ -123,6 +125,11 @@ function HandleHome({ isDark }) {
         );
     };
 
+    const deleteCard = (collection, id) => {
+        const setter = collection === "featured" ? setFeaturedCards : setCuratedLooks;
+        setter((previous) => previous.filter((card) => card.id !== id));
+    };
+
     const updateHeroSlideField = (index, field, value) => {
         setHeroSlides((previous) =>
             previous.map((slide, currentIndex) =>
@@ -153,18 +160,18 @@ function HandleHome({ isDark }) {
 
     const serializeFeaturedCards = () =>
         featuredCards.map((card, index) => ({
-            id: index + 1,
+            id: Number(card.id) || index + 1,
             title: card.title,
             subtitle: card.subtitle,
             image: card.image,
             product: {
-                ...homeContentDefaults.featuredCards[index].product,
+                ...homeContentDefaults.featuredCards[index % homeContentDefaults.featuredCards.length].product,
                 ...card.product,
-                id: index + 1,
-                originalPrice: toNumber(card.product.originalPrice, homeContentDefaults.featuredCards[index].product.originalPrice),
-                offerPrice: toNumber(card.product.offerPrice, homeContentDefaults.featuredCards[index].product.offerPrice),
-                discountPercent: toNumber(card.product.discountPercent, homeContentDefaults.featuredCards[index].product.discountPercent),
-                sellerRating: toNumber(card.product.sellerRating, homeContentDefaults.featuredCards[index].product.sellerRating),
+                id: Number(card.product.id) || Number(card.id) || index + 1,
+                originalPrice: toNumber(card.product.originalPrice, homeContentDefaults.featuredCards[index % homeContentDefaults.featuredCards.length].product.originalPrice),
+                offerPrice: toNumber(card.product.offerPrice, homeContentDefaults.featuredCards[index % homeContentDefaults.featuredCards.length].product.offerPrice),
+                discountPercent: toNumber(card.product.discountPercent, homeContentDefaults.featuredCards[index % homeContentDefaults.featuredCards.length].product.discountPercent),
+                sellerRating: toNumber(card.product.sellerRating, homeContentDefaults.featuredCards[index % homeContentDefaults.featuredCards.length].product.sellerRating),
                 availableColors: toList(card.product.availableColors),
                 sizes: toList(card.product.sizes),
                 images: [card.product.imageOne, card.product.imageTwo, card.product.imageThree, card.product.imageFour].filter(Boolean),
@@ -173,18 +180,18 @@ function HandleHome({ isDark }) {
 
     const serializeCuratedLooks = () =>
         curatedLooks.map((card, index) => ({
-            id: index + 3,
+            id: Number(card.id) || index + 3,
             title: card.title,
             subtitle: card.subtitle,
             image: card.image,
             product: {
-                ...homeContentDefaults.curatedLooks[index].product,
+                ...homeContentDefaults.curatedLooks[index % homeContentDefaults.curatedLooks.length].product,
                 ...card.product,
-                id: index + 3,
-                originalPrice: toNumber(card.product.originalPrice, homeContentDefaults.curatedLooks[index].product.originalPrice),
-                offerPrice: toNumber(card.product.offerPrice, homeContentDefaults.curatedLooks[index].product.offerPrice),
-                discountPercent: toNumber(card.product.discountPercent, homeContentDefaults.curatedLooks[index].product.discountPercent),
-                sellerRating: toNumber(card.product.sellerRating, homeContentDefaults.curatedLooks[index].product.sellerRating),
+                id: Number(card.product.id) || Number(card.id) || index + 3,
+                originalPrice: toNumber(card.product.originalPrice, homeContentDefaults.curatedLooks[index % homeContentDefaults.curatedLooks.length].product.originalPrice),
+                offerPrice: toNumber(card.product.offerPrice, homeContentDefaults.curatedLooks[index % homeContentDefaults.curatedLooks.length].product.offerPrice),
+                discountPercent: toNumber(card.product.discountPercent, homeContentDefaults.curatedLooks[index % homeContentDefaults.curatedLooks.length].product.discountPercent),
+                sellerRating: toNumber(card.product.sellerRating, homeContentDefaults.curatedLooks[index % homeContentDefaults.curatedLooks.length].product.sellerRating),
                 availableColors: toList(card.product.availableColors),
                 sizes: toList(card.product.sizes),
                 images: [card.product.imageOne, card.product.imageTwo, card.product.imageThree, card.product.imageFour].filter(Boolean),
@@ -300,8 +307,8 @@ function HandleHome({ isDark }) {
         }
     };
 
-    const pageClass = isDark ? "min-h-screen bg-zinc-950 px-4 pb-12 pt-28 text-zinc-100" : "min-h-screen bg-zinc-50 px-4 pb-12 pt-28 text-zinc-900";
-    const cardClass = isDark ? "rounded-3xl border border-zinc-800 bg-zinc-900 p-5 shadow-xl shadow-black/20" : "rounded-3xl border border-zinc-200 bg-white p-5 shadow-xl shadow-zinc-200/60";
+    const pageClass = isDark ? "min-h-screen bg-zinc-950 px-4 pb-14 pt-28 text-zinc-100 sm:px-6 lg:px-8" : "min-h-screen bg-zinc-50 px-4 pb-14 pt-28 text-zinc-900 sm:px-6 lg:px-8";
+    const cardClass = isDark ? "rounded-[32px] border border-zinc-800 bg-zinc-900 p-6 shadow-xl shadow-black/20" : "rounded-[32px] border border-zinc-200 bg-white p-6 shadow-xl shadow-zinc-200/60";
     const inputClass = isDark
         ? "w-full rounded-xl border border-zinc-700 bg-zinc-950 px-4 py-3 outline-none placeholder:text-zinc-500"
         : "w-full rounded-xl border border-zinc-300 bg-transparent px-4 py-3 outline-none placeholder:text-zinc-400";
@@ -437,19 +444,21 @@ function HandleHome({ isDark }) {
 
     return (
         <main className={pageClass}>
-            <section className="mx-auto max-w-7xl">
-                <div className="mb-8 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-                    <div>
-                        <p className={isDark ? "text-xs font-semibold uppercase tracking-[0.28em] text-zinc-400" : "text-xs font-semibold uppercase tracking-[0.28em] text-zinc-600"}>
-                            Admin workspace
-                        </p>
-                        <h1 className="mt-3 text-4xl font-black sm:text-5xl">Handle Home</h1>
-                        <p className={isDark ? "mt-3 max-w-2xl text-sm leading-7 text-zinc-300" : "mt-3 max-w-2xl text-sm leading-7 text-zinc-600"}>
-                            Edit hero slides, category items, featured cards, and the curated looks that appear on the home page.
-                        </p>
-                    </div>
-                    <div className={isDark ? "rounded-2xl border border-zinc-800 bg-zinc-900 px-4 py-3 text-sm text-zinc-300" : "rounded-2xl border border-zinc-200 bg-white px-4 py-3 text-sm text-zinc-700"}>
-                        Signed in as <span className="font-semibold">{user?.fullName}</span>
+            <section className="mx-auto max-w-7xl space-y-8">
+                <div className={isDark ? "rounded-[32px] border border-zinc-800 bg-zinc-900/80 p-6 shadow-xl shadow-black/20" : "rounded-[32px] border border-zinc-200 bg-white p-6 shadow-xl shadow-zinc-200/70"}>
+                    <div className="flex flex-col gap-5 lg:flex-row lg:items-end lg:justify-between">
+                        <div>
+                            <p className={isDark ? "text-xs font-semibold uppercase tracking-[0.28em] text-zinc-400" : "text-xs font-semibold uppercase tracking-[0.28em] text-zinc-600"}>
+                                Admin workspace
+                            </p>
+                            <h1 className="mt-3 text-4xl font-black sm:text-5xl">Handle Home</h1>
+                            <p className={isDark ? "mt-3 max-w-2xl text-sm leading-7 text-zinc-300" : "mt-3 max-w-2xl text-sm leading-7 text-zinc-600"}>
+                                Edit hero slides, category items, featured cards, and the curated looks that appear on the home page.
+                            </p>
+                        </div>
+                        <div className={isDark ? "rounded-2xl border border-zinc-800 bg-zinc-950 px-4 py-3 text-sm text-zinc-300" : "rounded-2xl border border-zinc-200 bg-zinc-50 px-4 py-3 text-sm text-zinc-700"}>
+                            Signed in as <span className="font-semibold">{user?.fullName}</span>
+                        </div>
                     </div>
                 </div>
 
@@ -459,9 +468,9 @@ function HandleHome({ isDark }) {
                     </div>
                 ) : null}
 
-                <div className="grid gap-6 lg:grid-cols-2">
+                <div className="grid gap-6 lg:grid-cols-2 xl:gap-8">
                     <section ref={heroEditorRef} className={cardClass}>
-                        <div className="flex items-center justify-between gap-3">
+                        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                             <div>
                                 <p className="text-xs font-semibold uppercase tracking-[0.22em] text-zinc-500">Hero slides</p>
                                 <h2 className="mt-2 text-2xl font-semibold">Add, edit, delete</h2>
@@ -509,7 +518,7 @@ function HandleHome({ isDark }) {
                     </section>
 
                     <section ref={categoryEditorRef} className={cardClass}>
-                        <div className="flex items-center justify-between gap-3">
+                        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                             <div>
                                 <p className="text-xs font-semibold uppercase tracking-[0.22em] text-zinc-500">Category items</p>
                                 <h2 className="mt-2 text-2xl font-semibold">Add, edit, delete</h2>
@@ -557,25 +566,42 @@ function HandleHome({ isDark }) {
                     </section>
                 </div>
 
-                <div className="grid gap-6 lg:grid-cols-[1.15fr_0.85fr]">
+                <div className="grid gap-6 lg:grid-cols-[1.15fr_0.85fr] xl:gap-8">
                     <section className={cardClass}>
-                        <div className="flex items-center justify-between gap-3">
+                        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                             <div>
                                 <p className="text-xs font-semibold uppercase tracking-[0.22em] text-zinc-500">Featured cards</p>
                                 <h2 className="mt-2 text-2xl font-semibold">On-Trend and Popular Tee</h2>
                             </div>
-                            <button type="button" onClick={() => navigate("/admin")} className={isDark ? "rounded-full border border-zinc-700 px-4 py-2 text-xs font-semibold text-zinc-200" : "rounded-full border border-zinc-300 px-4 py-2 text-xs font-semibold text-zinc-700"}>
-                                Back to Admin
-                            </button>
+                            <div className="flex flex-wrap gap-2">
+                                <button type="button" onClick={() => navigate("/admin")} className={isDark ? "rounded-full border border-zinc-700 px-4 py-2 text-xs font-semibold text-zinc-200" : "rounded-full border border-zinc-300 px-4 py-2 text-xs font-semibold text-zinc-700"}>
+                                    Back to Admin
+                                </button>
+                            </div>
                         </div>
 
                         <form onSubmit={handleSubmit} className="mt-6 space-y-6">
                             {featuredCards.map((card, index) => (
-                                <div key={card.title || index} className={isDark ? "rounded-2xl border border-zinc-800 bg-zinc-950 p-4" : "rounded-2xl border border-zinc-200 bg-zinc-50 p-4"}>
-                                    <p className="text-sm font-semibold">Featured Card {index + 1}</p>
+                                <div key={card.id || card.title || index} className={isDark ? "rounded-2xl border border-zinc-800 bg-zinc-950 p-4" : "rounded-2xl border border-zinc-200 bg-zinc-50 p-4"}>
+                                    <div className="flex items-center justify-between gap-3">
+                                        <p className="text-sm font-semibold">{card.title || `Featured Card ${index + 1}`}</p>
+                                        <button
+                                            type="button"
+                                            onClick={() => deleteCard("featured", card.id)}
+                                            className="rounded-full border border-red-400 px-3 py-1 text-xs font-semibold text-red-500"
+                                        >
+                                            Delete
+                                        </button>
+                                    </div>
                                     <div className="mt-4">{renderProductFields("featured", index, card)}</div>
                                 </div>
                             ))}
+
+                            {!featuredCards.length ? (
+                                <div className={isDark ? "rounded-2xl border border-dashed border-zinc-700 p-4 text-sm text-zinc-400" : "rounded-2xl border border-dashed border-zinc-300 p-4 text-sm text-zinc-500"}>
+                                    No featured cards are configured.
+                                </div>
+                            ) : null}
 
                             <div className="rounded-2xl border border-dashed border-zinc-300 p-4 dark:border-zinc-700">
                                 <p className="text-sm font-semibold">Curated Looks</p>
@@ -583,14 +609,29 @@ function HandleHome({ isDark }) {
 
                                 <div className="mt-4 space-y-6">
                                     {curatedLooks.map((card, index) => (
-                                        <div key={card.title || index} className={isDark ? "rounded-2xl border border-zinc-800 bg-zinc-950 p-4" : "rounded-2xl border border-zinc-200 bg-zinc-50 p-4"}>
-                                            <p className="text-sm font-semibold">Look {index + 1}</p>
+                                        <div key={card.id || card.title || index} className={isDark ? "rounded-2xl border border-zinc-800 bg-zinc-950 p-4" : "rounded-2xl border border-zinc-200 bg-zinc-50 p-4"}>
+                                            <div className="flex items-center justify-between gap-3">
+                                                <p className="text-sm font-semibold">{card.title || `Look ${index + 1}`}</p>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => deleteCard("curated", card.id)}
+                                                    className="rounded-full border border-red-400 px-3 py-1 text-xs font-semibold text-red-500"
+                                                >
+                                                    Delete
+                                                </button>
+                                            </div>
                                             <div className="mt-4">
                                                 {renderProductFields("curated", index, card)}
                                             </div>
                                         </div>
                                     ))}
                                 </div>
+
+                                {!curatedLooks.length ? (
+                                    <div className={isDark ? "mt-4 rounded-2xl border border-dashed border-zinc-700 p-4 text-sm text-zinc-400" : "mt-4 rounded-2xl border border-dashed border-zinc-300 p-4 text-sm text-zinc-500"}>
+                                        No curated looks are configured.
+                                    </div>
+                                ) : null}
 
                                 <div className="mt-6 flex flex-wrap gap-3">
                                     <button type="button" onClick={saveCuratedLooks} className="rounded-full bg-black px-5 py-3 text-sm font-semibold text-white dark:bg-white dark:text-black">
@@ -610,7 +651,7 @@ function HandleHome({ isDark }) {
                         </form>
                     </section>
 
-                    <aside className={cardClass}>
+                    <aside className={`${cardClass} lg:sticky lg:top-28 self-start`}>
                         <div>
                             <p className="text-xs font-semibold uppercase tracking-[0.22em] text-zinc-500">Notes</p>
                             <h2 className="mt-2 text-2xl font-semibold">Navigation behavior</h2>

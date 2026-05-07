@@ -167,6 +167,7 @@ function Navbar({ isDark, onToggleTheme }) {
                         <li className="cursor-pointer transition hover:text-white dark:hover:text-white" onClick={() => navigate("/constitutional-edition")}>CONSTITUTIONAL EDITION</li>
                         <li className="cursor-pointer transition hover:text-white dark:hover:text-white" onClick={() => navigate("/custom-edition")}>CUSTOM EDITION</li>
                         <li className="cursor-pointer transition hover:text-white dark:hover:text-white" onClick={() => navigate("/custom-edition/track")}>TRACK ORDER</li>
+                        <li className="cursor-pointer transition hover:text-white dark:hover:text-white" onClick={() => navigate("/about")}>ABOUT</li>
                     </ul>
 
                     <div className="relative hidden items-center gap-3 lg:flex">
@@ -370,6 +371,7 @@ function Navbar({ isDark, onToggleTheme }) {
                             <button onClick={() => handleNavigate("/constitutional-edition")} className={isDark ? "flex w-full items-center justify-between border-b border-zinc-800 py-4 text-left text-xl text-zinc-100" : "flex w-full items-center justify-between border-b border-zinc-200 py-4 text-left text-xl text-zinc-900"}>CONSTITUTIONAL EDITION <span className="text-2xl">+</span></button>
                             <button onClick={() => handleNavigate("/custom-edition")} className={isDark ? "flex w-full items-center justify-between border-b border-zinc-800 py-4 text-left text-xl text-zinc-100" : "flex w-full items-center justify-between border-b border-zinc-200 py-4 text-left text-xl text-zinc-900"}>CUSTOM EDITION <span className="text-2xl">+</span></button>
                             <button onClick={() => handleNavigate("/custom-edition/track")} className={isDark ? "flex w-full items-center justify-between py-4 text-left text-xl text-zinc-100" : "flex w-full items-center justify-between py-4 text-left text-xl text-zinc-900"}>TRACK ORDER</button>
+                            <button onClick={() => handleNavigate("/about")} className={isDark ? "flex w-full items-center justify-between border-t border-zinc-800 py-4 text-left text-xl text-zinc-100" : "flex w-full items-center justify-between border-t border-zinc-200 py-4 text-left text-xl text-zinc-900"}>ABOUT</button>
                         </div>
 
                         <div className={isDark ? "mt-2 border-t border-zinc-800 bg-zinc-900 px-4 py-4" : "mt-2 border-t border-zinc-200 bg-zinc-50 px-4 py-4"}>
