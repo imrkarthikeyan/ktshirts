@@ -106,9 +106,7 @@ export const updateContactSettings = async (updates, tokenOverride) => {
         ...currentSettings,
         ...updates,
     });
-
     writeContactSettings(nextSettings);
-
     const token = tokenOverride || (hasWindow() ? window.localStorage.getItem("authToken") : null);
     const persisted = await updateSiteContent("contact", nextSettings, token);
     writeContactSettings(normalizeContactSettings(persisted));

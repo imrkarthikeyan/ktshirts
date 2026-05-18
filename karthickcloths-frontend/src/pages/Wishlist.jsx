@@ -56,7 +56,7 @@ function Wishlist({ isDark }) {
                         </p>
                         <button
                             type="button"
-                            onClick={() => navigate("/men")}
+                            onClick={() => navigate("/constitutional-edition")}
                             className={isDark ? "mt-6 rounded-xl bg-white px-6 py-3 text-sm font-semibold text-black transition hover:-translate-y-0.5 hover:bg-zinc-200" : "mt-6 rounded-xl bg-zinc-900 px-6 py-3 text-sm font-semibold text-white transition hover:-translate-y-0.5 hover:bg-black"}
                         >
                             Browse Products

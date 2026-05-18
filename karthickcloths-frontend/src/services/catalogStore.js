@@ -158,9 +158,9 @@ export const replaceCatalogProducts = (category, products) => {
 };
 
 export const getAllCatalogProducts = () => [
-    ...getCatalogProducts("men"),
-    ...getCatalogProducts("women"),
-    ...getCatalogProducts("kids"),
+    // ...getCatalogProducts("men"),
+    // ...getCatalogProducts("women"),
+    // ...getCatalogProducts("kids"),
     ...getCatalogProducts("constitutional"),
 ];
 

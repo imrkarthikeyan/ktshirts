@@ -35,7 +35,7 @@ const Cart = ({ isDark }) => {
     };
 
     const handleContinueShopping = () => {
-        navigate('/men');
+        navigate('/constitutional-edition');
     };
 
     if (loading) {
