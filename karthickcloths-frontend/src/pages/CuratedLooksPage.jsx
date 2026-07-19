@@ -6,7 +6,7 @@ function CuratedLooksPage({ isDark }) {
     const navigate = useNavigate();
     const [activeIndex, setActiveIndex] = useState(0);
     const [showContent, setShowContent] = useState(false);
-    const [curatedLooks, setCuratedLooks] = useState(() => getHomeContent().curatedLooks);
+    const [curatedLooks, setCuratedLooks] = useState(() => getHomeContent().curatedLooks.filter((look) => !look.hidden));
     const hasLooks = curatedLooks.length > 0;
 
     const goToPrev = () => {
@@ -35,7 +35,7 @@ function CuratedLooksPage({ isDark }) {
     }, []);
 
     useEffect(() => {
-        const syncHomeContent = () => setCuratedLooks(getHomeContent().curatedLooks);
+        const syncHomeContent = () => setCuratedLooks(getHomeContent().curatedLooks.filter((look) => !look.hidden));
         const loadFromServer = async () => {
             await syncHomeContentFromServer(true);
             syncHomeContent();

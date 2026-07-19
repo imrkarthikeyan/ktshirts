@@ -29,6 +29,7 @@ const createCardForm = (card = {}) => ({
     title: card.title || "",
     subtitle: card.subtitle || "",
     image: card.image || "",
+    hidden: Boolean(card.hidden),
     product: createProductForm(card.product),
 });
 
@@ -47,6 +48,7 @@ const createCategoryItemForm = (item = {}) => ({
     title: item.title || "",
     image: item.image || "",
     targetPath: item.targetPath || "/constitutional-edition",
+    hidden: Boolean(item.hidden),
 });
 
 const toList = (value) =>
@@ -130,6 +132,13 @@ function HandleHome({ isDark }) {
         setter((previous) => previous.filter((card) => card.id !== id));
     };
 
+    const toggleCardHidden = (collection, id) => {
+        const setter = collection === "featured" ? setFeaturedCards : setCuratedLooks;
+        setter((previous) =>
+            previous.map((card) => (card.id === id ? { ...card, hidden: !card.hidden } : card))
+        );
+    };
+
     const updateHeroSlideField = (index, field, value) => {
         setHeroSlides((previous) =>
             previous.map((slide, currentIndex) =>
@@ -164,6 +173,7 @@ function HandleHome({ isDark }) {
             title: card.title,
             subtitle: card.subtitle,
             image: card.image,
+            hidden: Boolean(card.hidden),
             product: {
                 ...homeContentDefaults.featuredCards[index % homeContentDefaults.featuredCards.length].product,
                 ...card.product,
@@ -184,6 +194,7 @@ function HandleHome({ isDark }) {
             title: card.title,
             subtitle: card.subtitle,
             image: card.image,
+            hidden: Boolean(card.hidden),
             product: {
                 ...homeContentDefaults.curatedLooks[index % homeContentDefaults.curatedLooks.length].product,
                 ...card.product,
@@ -209,12 +220,13 @@ function HandleHome({ isDark }) {
             targetPath: slide.targetPath,
         }));
 
-    const serializeCategoryItems = () =>
-        categoryItems.map((item, index) => ({
+    const serializeCategoryItems = (items = categoryItems) =>
+        items.map((item, index) => ({
             id: index + 1,
             title: item.title,
             image: item.image,
             targetPath: item.targetPath,
+            hidden: Boolean(item.hidden),
         }));
 
     const saveFeaturedCards = async () => {
@@ -292,6 +304,19 @@ function HandleHome({ isDark }) {
     const deleteCategoryItem = (index) => {
         setCategoryItems((previous) => previous.filter((_, currentIndex) => currentIndex !== index));
         setEditingCategoryIndex((previous) => Math.max(0, Math.min(previous, categoryItems.length - 2)));
+    };
+
+    const allCategoryItemsHidden = categoryItems.length > 0 && categoryItems.every((item) => item.hidden);
+
+    const toggleAllCategoryItemsHidden = async () => {
+        const nextHidden = !allCategoryItemsHidden;
+        const updatedItems = categoryItems.map((item) => ({ ...item, hidden: nextHidden }));
+        setCategoryItems(updatedItems);
+        await persistHomeContent(
+            { categoryItems: serializeCategoryItems(updatedItems) },
+            nextHidden ? "Category items are now hidden from customers." : "Category items are visible to customers again.",
+            "Unable to update category items visibility."
+        );
     };
 
     const handleReset = async () => {
@@ -523,9 +548,18 @@ function HandleHome({ isDark }) {
                                 <p className="text-xs font-semibold uppercase tracking-[0.22em] text-zinc-500">Category items</p>
                                 <h2 className="mt-2 text-2xl font-semibold">Add, edit, delete</h2>
                             </div>
-                            <button type="button" onClick={addCategoryItem} className="rounded-full bg-cyan-500 px-4 py-2 text-xs font-semibold text-white">
-                                Add Category Item
-                            </button>
+                            <div className="flex flex-wrap gap-2">
+                                <button type="button" onClick={addCategoryItem} className="rounded-full bg-cyan-500 px-4 py-2 text-xs font-semibold text-white">
+                                    Add Category Item
+                                </button>
+                                <button
+                                    type="button"
+                                    onClick={toggleAllCategoryItemsHidden}
+                                    className={allCategoryItemsHidden ? "rounded-full bg-amber-500 px-4 py-2 text-xs font-semibold text-white" : "rounded-full border border-amber-500 px-4 py-2 text-xs font-semibold text-amber-500"}
+                                >
+                                    {allCategoryItemsHidden ? "Unhide Category Items" : "Hide Category Items"}
+                                </button>
+                            </div>
                         </div>
 
                         <div className="mt-5 space-y-3">
@@ -533,7 +567,10 @@ function HandleHome({ isDark }) {
                                 <div key={`${item.id || index}`} className={isDark ? "rounded-2xl border border-zinc-800 bg-zinc-950 p-4" : "rounded-2xl border border-zinc-200 bg-zinc-50 p-4"}>
                                     <div className="flex items-start justify-between gap-3">
                                         <div>
-                                            <p className="text-sm font-semibold">{item.title || `Item ${index + 1}`}</p>
+                                            <p className="text-sm font-semibold">
+                                                {item.title || `Item ${index + 1}`}
+                                                {item.hidden ? <span className="ml-2 rounded-full bg-red-500/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-red-500">Hidden</span> : null}
+                                            </p>
                                             <p className={isDark ? "text-xs text-zinc-400" : "text-xs text-zinc-600"}>{item.targetPath === "/custom-edition" ? "Custom Edition" : "Constitutional Edition"}</p>
                                         </div>
                                         <div className="flex gap-2">
@@ -584,14 +621,26 @@ function HandleHome({ isDark }) {
                             {featuredCards.map((card, index) => (
                                 <div key={card.id || card.title || index} className={isDark ? "rounded-2xl border border-zinc-800 bg-zinc-950 p-4" : "rounded-2xl border border-zinc-200 bg-zinc-50 p-4"}>
                                     <div className="flex items-center justify-between gap-3">
-                                        <p className="text-sm font-semibold">{card.title || `Featured Card ${index + 1}`}</p>
-                                        <button
-                                            type="button"
-                                            onClick={() => deleteCard("featured", card.id)}
-                                            className="rounded-full border border-red-400 px-3 py-1 text-xs font-semibold text-red-500"
-                                        >
-                                            Delete
-                                        </button>
+                                        <p className="text-sm font-semibold">
+                                            {card.title || `Featured Card ${index + 1}`}
+                                            {card.hidden ? <span className="ml-2 rounded-full bg-red-500/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-red-500">Hidden</span> : null}
+                                        </p>
+                                        <div className="flex gap-2">
+                                            <button
+                                                type="button"
+                                                onClick={() => toggleCardHidden("featured", card.id)}
+                                                className={card.hidden ? "rounded-full bg-amber-500 px-3 py-1 text-xs font-semibold text-white" : "rounded-full border border-amber-500 px-3 py-1 text-xs font-semibold text-amber-500"}
+                                            >
+                                                {card.hidden ? "Unhide" : "Hide"}
+                                            </button>
+                                            <button
+                                                type="button"
+                                                onClick={() => deleteCard("featured", card.id)}
+                                                className="rounded-full border border-red-400 px-3 py-1 text-xs font-semibold text-red-500"
+                                            >
+                                                Delete
+                                            </button>
+                                        </div>
                                     </div>
                                     <div className="mt-4">{renderProductFields("featured", index, card)}</div>
                                 </div>
@@ -611,14 +660,26 @@ function HandleHome({ isDark }) {
                                     {curatedLooks.map((card, index) => (
                                         <div key={card.id || card.title || index} className={isDark ? "rounded-2xl border border-zinc-800 bg-zinc-950 p-4" : "rounded-2xl border border-zinc-200 bg-zinc-50 p-4"}>
                                             <div className="flex items-center justify-between gap-3">
-                                                <p className="text-sm font-semibold">{card.title || `Look ${index + 1}`}</p>
-                                                <button
-                                                    type="button"
-                                                    onClick={() => deleteCard("curated", card.id)}
-                                                    className="rounded-full border border-red-400 px-3 py-1 text-xs font-semibold text-red-500"
-                                                >
-                                                    Delete
-                                                </button>
+                                                <p className="text-sm font-semibold">
+                                                    {card.title || `Look ${index + 1}`}
+                                                    {card.hidden ? <span className="ml-2 rounded-full bg-red-500/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-red-500">Hidden</span> : null}
+                                                </p>
+                                                <div className="flex gap-2">
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => toggleCardHidden("curated", card.id)}
+                                                        className={card.hidden ? "rounded-full bg-amber-500 px-3 py-1 text-xs font-semibold text-white" : "rounded-full border border-amber-500 px-3 py-1 text-xs font-semibold text-amber-500"}
+                                                    >
+                                                        {card.hidden ? "Unhide" : "Hide"}
+                                                    </button>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => deleteCard("curated", card.id)}
+                                                        className="rounded-full border border-red-400 px-3 py-1 text-xs font-semibold text-red-500"
+                                                    >
+                                                        Delete
+                                                    </button>
+                                                </div>
                                             </div>
                                             <div className="mt-4">
                                                 {renderProductFields("curated", index, card)}

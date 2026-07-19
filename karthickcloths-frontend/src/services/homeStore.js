@@ -37,6 +37,7 @@ const defaultCategoryItem = (item) => ({
     title: String(item.title || "").trim(),
     image: String(item.image || "").trim(),
     targetPath: String(item.targetPath || "/constitutional-edition").trim(),
+    hidden: Boolean(item.hidden),
 });
 
 const defaultHomeContent = {
@@ -369,6 +370,7 @@ const normalizeHomeContent = (value = {}) => {
             ...item,
             id: Number(item.id) || index + 1,
             targetPath: String(item.targetPath || item.target || "/constitutional-edition").trim(),
+            hidden: Boolean(item.hidden),
         }))
         : defaultHomeContent.categoryItems;
 
@@ -377,6 +379,7 @@ const normalizeHomeContent = (value = {}) => {
             ...defaultHomeContent.featuredCards[index % defaultHomeContent.featuredCards.length],
             ...card,
             id: Number(card.id) || defaultHomeContent.featuredCards[index % defaultHomeContent.featuredCards.length].id,
+            hidden: Boolean(card.hidden),
             product: makeProduct({ ...defaultHomeContent.featuredCards[index % defaultHomeContent.featuredCards.length].product, ...(card.product || {}), id: Number(card.product?.id) || Number(card.id) || defaultHomeContent.featuredCards[index % defaultHomeContent.featuredCards.length].id }),
         }))
         : defaultHomeContent.featuredCards;
@@ -386,6 +389,7 @@ const normalizeHomeContent = (value = {}) => {
             ...defaultHomeContent.curatedLooks[index % defaultHomeContent.curatedLooks.length],
             ...card,
             id: Number(card.id) || defaultHomeContent.curatedLooks[index % defaultHomeContent.curatedLooks.length].id,
+            hidden: Boolean(card.hidden),
             product: makeProduct({ ...defaultHomeContent.curatedLooks[index % defaultHomeContent.curatedLooks.length].product, ...(card.product || {}), id: Number(card.product?.id) || Number(card.id) || defaultHomeContent.curatedLooks[index % defaultHomeContent.curatedLooks.length].id }),
         }))
         : defaultHomeContent.curatedLooks;

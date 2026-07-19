@@ -12,8 +12,8 @@ function HomePage({ isDark }) {
     const railRef = useRef(null);
 
     const heroSlides = homeContent.heroSlides || [];
-    const categoryItems = homeContent.categoryItems || [];
-    const featuredCards = homeContent.featuredCards || [];
+    const categoryItems = (homeContent.categoryItems || []).filter((item) => !item.hidden);
+    const featuredCards = (homeContent.featuredCards || []).filter((card) => !card.hidden);
     const movingItems = useMemo(() => [...categoryItems, ...categoryItems], [categoryItems]);
     const currentSlide = heroSlides[activeSlide] || heroSlides[0];
 
