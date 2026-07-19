@@ -9,7 +9,7 @@ export const CartProvider = ({ children }) => {
     const [cartTotal, setCartTotal] = useState(0);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
-    const { token, isAuthenticated } = useAuth();
+    const { token, isAuthenticated, logout } = useAuth();
 
     // Fetch cart items when component mounts or token changes
     useEffect(() => {
@@ -21,8 +21,17 @@ export const CartProvider = ({ children }) => {
         }
     }, [token, isAuthenticated]);
 
+    const handleResponse = async (response) => {
+        if (response.status === 401) {
+            logout();
+            throw new Error('Unauthorized - Please login');
+        }
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.message || `Request failed (${response.status})`);
+        return data;
+    };
+
     const fetchCartItems = async () => {
-        // Validate token exists before making request
         if (!token) {
             setError('Not authenticated');
             return;
@@ -38,12 +47,7 @@ export const CartProvider = ({ children }) => {
                 },
             });
 
-            const data = await response.json();
-
-            if (!response.ok) {
-                throw new Error(data.message || `Failed to fetch cart items (${response.status})`);
-            }
-
+            const data = await handleResponse(response);
             setCartItems(data.items || []);
             setCartTotal(data.total || 0);
         } catch (err) {
@@ -73,13 +77,7 @@ export const CartProvider = ({ children }) => {
                 body: JSON.stringify(cartItemData),
             });
 
-            const data = await response.json();
-
-            if (!response.ok) {
-                throw new Error(data.message || `Failed to add to cart (${response.status})`);
-            }
-
-            // Refresh cart items
+            const data = await handleResponse(response);
             await fetchCartItems();
             return data.data;
         } catch (err) {
@@ -104,13 +102,7 @@ export const CartProvider = ({ children }) => {
                 body: JSON.stringify({ quantity }),
             });
 
-            const data = await response.json();
-
-            if (!response.ok) {
-                throw new Error(data.message || 'Failed to update cart item');
-            }
-
-            // Refresh cart items
+            await handleResponse(response);
             await fetchCartItems();
         } catch (err) {
             setError(err.message);
@@ -131,13 +123,7 @@ export const CartProvider = ({ children }) => {
                 },
             });
 
-            const data = await response.json();
-
-            if (!response.ok) {
-                throw new Error(data.message || 'Failed to remove item from cart');
-            }
-
-            // Refresh cart items
+            await handleResponse(response);
             await fetchCartItems();
         } catch (err) {
             setError(err.message);
@@ -158,12 +144,7 @@ export const CartProvider = ({ children }) => {
                 },
             });
 
-            const data = await response.json();
-
-            if (!response.ok) {
-                throw new Error(data.message || 'Failed to clear cart');
-            }
-
+            await handleResponse(response);
             setCartItems([]);
             setCartTotal(0);
         } catch (err) {
