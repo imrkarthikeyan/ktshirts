@@ -35,7 +35,7 @@ public class CustomTshirtRequestService {
     @Autowired
     private CartService cartService;
 
-    @Value("${app.mail.from:${spring.mail.username:}}")
+    @Value("${app.mail.from:${app.mail.username:}}")
     private String mailFrom;
 
     public CustomTshirtRequest createRequest(User user, CustomTshirtRequestCreateDto requestDto) throws Exception {

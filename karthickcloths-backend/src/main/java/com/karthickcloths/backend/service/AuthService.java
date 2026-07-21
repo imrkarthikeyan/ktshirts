@@ -40,10 +40,10 @@ public class AuthService {
     @Value("${app.mail.from:}")
     private String fromEmail;
 
-    @Value("${spring.mail.username:}")
+    @Value("${app.mail.username:}")
     private String mailUsername;
 
-    @Value("${spring.mail.password:}")
+    @Value("${app.mail.password:}")
     private String mailPassword;
 
     @Value("${app.otp.dev-fallback:true}")
@@ -227,7 +227,7 @@ public class AuthService {
                 LOGGER.warn("SMTP not configured. Using development OTP fallback for {}. OTP: {}", email, otp);
                 return "OTP email is not configured on server. Development OTP: " + otp;
             }
-            throw new Exception("Unable to send OTP email. Configure SPRING_MAIL_PASSWORD with Gmail App Password for 8karthikeyanr@gmail.com.");
+            throw new Exception("Unable to send OTP email. Configure APP_MAIL_USERNAME/APP_MAIL_PASSWORD with a valid Gmail App Password.");
         }
 
         try {
@@ -245,7 +245,7 @@ public class AuthService {
                 LOGGER.warn("Email send failed. Using development OTP fallback for {}. OTP: {}", email, otp);
                 return "OTP email delivery failed. Development OTP: " + otp;
             }
-            throw new Exception("Unable to send OTP email from 8karthikeyanr@gmail.com. Check Gmail App Password / SMTP access. Reason: " + ex.getMessage());
+            throw new Exception("Unable to send OTP email from " + mailUsername + ". Check Gmail App Password / SMTP access. Reason: " + ex.getMessage());
         }
     }
 

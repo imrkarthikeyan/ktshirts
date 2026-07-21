@@ -12,7 +12,7 @@ import java.util.stream.Stream;
 @Configuration
 public class CorsConfig {
 
-    @Value("${app.cors.allowed-origins:http://localhost:5173,http://localhost:5174,https://trailbytshirt.vercel.app,https://*.vercel.app}")
+    @Value("${app.cors.allowed-origins:http://localhost:5173,http://localhost:5174,http://127.0.0.1:5173,http://127.0.0.1:5174,https://trialbytshirt.com,https://www.trialbytshirt.com,https://trailbytshirt.vercel.app,https://*.vercel.app}")
     private String allowedOrigins;
 
     @Bean
@@ -23,6 +23,10 @@ public class CorsConfig {
                 String[] defaultOrigins = new String[]{
                     "http://localhost:5173",
                     "http://localhost:5174",
+                    "http://127.0.0.1:5173",
+                    "http://127.0.0.1:5174",
+                    "https://trialbytshirt.com",
+                    "https://www.trialbytshirt.com",
                     "https://trailbytshirt.vercel.app",
                     "https://*.vercel.app"
                 };

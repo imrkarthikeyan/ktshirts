@@ -4,6 +4,26 @@ const API_BASE_URL =
 
 export { API_BASE_URL };
 
+const FETCH_RETRY_ATTEMPTS = 4;
+const FETCH_RETRY_DELAY_MS = 3000;
+
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+// Render's free tier spins the backend down when idle, so the first request(s)
+// after a period of inactivity can fail at the network level while it cold-starts.
+// Retry those (not HTTP error responses, only network-level fetch failures).
+async function fetchWithRetry(url, options, attempts = FETCH_RETRY_ATTEMPTS) {
+    try {
+        return await fetch(url, options);
+    } catch (error) {
+        if (attempts <= 1) {
+            throw error;
+        }
+        await sleep(FETCH_RETRY_DELAY_MS);
+        return fetchWithRetry(url, options, attempts - 1);
+    }
+}
+
 const hasOnlineImageUrl = (url) => typeof url === "string" && /^https?:\/\//i.test(url);
 
 const getTempImages = (seed) => [
@@ -40,7 +60,7 @@ const normalizeProductList = (data) =>
     Array.isArray(data) ? data.map((product, index) => normalizeProductImages(product, index)) : [];
 
 export async function fetchMenProducts() {
-    const response = await fetch(`${API_BASE_URL}/products/men`);
+    const response = await fetchWithRetry(`${API_BASE_URL}/products/men`);
     if (!response.ok) {
         throw new Error("Unable to fetch men products");
     }
@@ -49,7 +69,7 @@ export async function fetchMenProducts() {
 }
 
 export async function fetchMenProductById(productId) {
-    const response = await fetch(`${API_BASE_URL}/products/men/${productId}`);
+    const response = await fetchWithRetry(`${API_BASE_URL}/products/men/${productId}`);
     if (!response.ok) {
         throw new Error("Unable to fetch product details");
     }
@@ -58,7 +78,7 @@ export async function fetchMenProductById(productId) {
 }
 
 export async function fetchWomenProducts() {
-    const response = await fetch(`${API_BASE_URL}/products/women`);
+    const response = await fetchWithRetry(`${API_BASE_URL}/products/women`);
     if (!response.ok) {
         throw new Error("Unable to fetch women products");
     }
@@ -67,7 +87,7 @@ export async function fetchWomenProducts() {
 }
 
 export async function fetchWomenProductById(productId) {
-    const response = await fetch(`${API_BASE_URL}/products/women/${productId}`);
+    const response = await fetchWithRetry(`${API_BASE_URL}/products/women/${productId}`);
     if (!response.ok) {
         throw new Error("Unable to fetch women product details");
     }
@@ -76,7 +96,7 @@ export async function fetchWomenProductById(productId) {
 }
 
 export async function fetchKidsProducts() {
-    const response = await fetch(`${API_BASE_URL}/products/kids`);
+    const response = await fetchWithRetry(`${API_BASE_URL}/products/kids`);
     if (!response.ok) {
         throw new Error("Unable to fetch kids products");
     }
@@ -85,7 +105,7 @@ export async function fetchKidsProducts() {
 }
 
 export async function fetchKidsProductById(productId) {
-    const response = await fetch(`${API_BASE_URL}/products/kids/${productId}`);
+    const response = await fetchWithRetry(`${API_BASE_URL}/products/kids/${productId}`);
     if (!response.ok) {
         throw new Error("Unable to fetch kids product details");
     }
@@ -94,7 +114,7 @@ export async function fetchKidsProductById(productId) {
 }
 
 export async function createWhatsappOrderLink(payload) {
-    const response = await fetch(`${API_BASE_URL}/orders/whatsapp-link`, {
+    const response = await fetchWithRetry(`${API_BASE_URL}/orders/whatsapp-link`, {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
@@ -110,7 +130,7 @@ export async function createWhatsappOrderLink(payload) {
 }
 
 export async function requestSignupOtp(signupData) {
-    const response = await fetch(`${API_BASE_URL}/auth/signup/request-otp`, {
+    const response = await fetchWithRetry(`${API_BASE_URL}/auth/signup/request-otp`, {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
@@ -126,7 +146,7 @@ export async function requestSignupOtp(signupData) {
 }
 
 export async function verifySignupOtp(email, otp) {
-    const response = await fetch(`${API_BASE_URL}/auth/signup/verify-otp`, {
+    const response = await fetchWithRetry(`${API_BASE_URL}/auth/signup/verify-otp`, {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
@@ -147,7 +167,7 @@ const getAuthHeaders = (token) => ({
 });
 
 export async function createCustomEditionRequest(payload, token) {
-    const response = await fetch(`${API_BASE_URL}/custom-edition/requests`, {
+    const response = await fetchWithRetry(`${API_BASE_URL}/custom-edition/requests`, {
         method: "POST",
         headers: getAuthHeaders(token),
         body: JSON.stringify(payload),
@@ -169,7 +189,7 @@ export async function trackCustomEditionRequest({ orderId, email }) {
         query.set("email", email);
     }
 
-    const response = await fetch(`${API_BASE_URL}/custom-edition/tracking?${query.toString()}`);
+    const response = await fetchWithRetry(`${API_BASE_URL}/custom-edition/tracking?${query.toString()}`);
     const data = await response.json();
 
     if (!response.ok) {
@@ -180,7 +200,7 @@ export async function trackCustomEditionRequest({ orderId, email }) {
 }
 
 export async function fetchMyCustomEditionRequests(token) {
-    const response = await fetch(`${API_BASE_URL}/custom-edition/requests/mine`, {
+    const response = await fetchWithRetry(`${API_BASE_URL}/custom-edition/requests/mine`, {
         headers: {
             Authorization: `Bearer ${token}`,
         },
@@ -195,7 +215,7 @@ export async function fetchMyCustomEditionRequests(token) {
 
 export async function fetchAdminCustomEditionRequests(token, status) {
     const query = status ? `?status=${encodeURIComponent(status)}` : "";
-    const response = await fetch(`${API_BASE_URL}/custom-edition/requests/admin${query}`, {
+    const response = await fetchWithRetry(`${API_BASE_URL}/custom-edition/requests/admin${query}`, {
         headers: {
             Authorization: `Bearer ${token}`,
         },
@@ -209,7 +229,7 @@ export async function fetchAdminCustomEditionRequests(token, status) {
 }
 
 export async function respondToCustomEditionRequest(requestId, payload, token) {
-    const response = await fetch(`${API_BASE_URL}/custom-edition/requests/${requestId}/respond`, {
+    const response = await fetchWithRetry(`${API_BASE_URL}/custom-edition/requests/${requestId}/respond`, {
         method: "PUT",
         headers: getAuthHeaders(token),
         body: JSON.stringify(payload),
@@ -223,7 +243,7 @@ export async function respondToCustomEditionRequest(requestId, payload, token) {
 }
 
 export async function convertCustomEditionToCart(orderId, token) {
-    const response = await fetch(`${API_BASE_URL}/custom-edition/requests/${orderId}/checkout`, {
+    const response = await fetchWithRetry(`${API_BASE_URL}/custom-edition/requests/${orderId}/checkout`, {
         method: "POST",
         headers: {
             Authorization: `Bearer ${token}`,
@@ -239,7 +259,7 @@ export async function convertCustomEditionToCart(orderId, token) {
 }
 
 export async function confirmCustomEditionRequest(orderId, token) {
-    const response = await fetch(`${API_BASE_URL}/custom-edition/requests/${orderId}/confirm`, {
+    const response = await fetchWithRetry(`${API_BASE_URL}/custom-edition/requests/${orderId}/confirm`, {
         method: "POST",
         headers: {
             Authorization: `Bearer ${token}`,
@@ -255,7 +275,7 @@ export async function confirmCustomEditionRequest(orderId, token) {
 }
 
 export async function cancelCustomEditionRequest(orderId, token) {
-    const response = await fetch(`${API_BASE_URL}/custom-edition/requests/${orderId}/cancel`, {
+    const response = await fetchWithRetry(`${API_BASE_URL}/custom-edition/requests/${orderId}/cancel`, {
         method: "POST",
         headers: {
             Authorization: `Bearer ${token}`,
@@ -271,7 +291,7 @@ export async function cancelCustomEditionRequest(orderId, token) {
 }
 
 export async function fetchSiteContent(key) {
-    const response = await fetch(`${API_BASE_URL}/site-content/${encodeURIComponent(key)}`);
+    const response = await fetchWithRetry(`${API_BASE_URL}/site-content/${encodeURIComponent(key)}`);
     const data = await response.json();
 
     if (!response.ok || data?.success === false) {
@@ -286,7 +306,7 @@ export async function updateSiteContent(key, payload, token) {
         throw new Error("Admin token is required to update site content");
     }
 
-    const response = await fetch(`${API_BASE_URL}/site-content/${encodeURIComponent(key)}`, {
+    const response = await fetchWithRetry(`${API_BASE_URL}/site-content/${encodeURIComponent(key)}`, {
         method: "PUT",
         headers: {
             "Content-Type": "application/json",
