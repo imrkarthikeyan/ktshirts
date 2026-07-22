@@ -86,7 +86,7 @@ function Footer({ isDark }) {
                                 <span className="font-semibold">Email:</span> {contactDetails.email}
                             </li>
                             <li>
-                                <span className="font-semibold">Working Hours:</span> {contactDetails.workingHours}
+                                <span className="font-semibold">Working  Hours:</span> {contactDetails.workingHours}
                             </li>
                         </ul>
                     </div>
