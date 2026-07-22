@@ -77,16 +77,16 @@ function Footer({ isDark }) {
                         <h3 className="text-sm font-bold uppercase tracking-[0.2em]">Contact Details</h3>
                         <ul className="mt-3 space-y-2 text-sm leading-6">
                             <li>
-                                <span className="font-semibold">Phone :</span> {contactDetails.phone}
+                                <span className="font-semibold">Phone:</span> {contactDetails.phone}
                             </li>
                             <li>
-                                <span className="font-semibold">WhatsApp :</span> {contactDetails.whatsapp}
+                                <span className="font-semibold">WhatsApp:</span> {contactDetails.whatsapp}
                             </li>
                             <li>
-                                <span className="font-semibold">Email :</span> {contactDetails.email}
+                                <span className="font-semibold">Email:</span> {contactDetails.email}
                             </li>
                             <li>
-                                <span className="font-semibold">Working Hours  :</span> {contactDetails.workingHours}
+                                <span className="font-semibold">Working Hours:</span> {contactDetails.workingHours}
                             </li>
                         </ul>
                     </div>
