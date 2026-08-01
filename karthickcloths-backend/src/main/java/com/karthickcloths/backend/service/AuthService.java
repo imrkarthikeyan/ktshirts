@@ -46,7 +46,7 @@ public class AuthService {
     @Value("${app.mail.password:}")
     private String mailPassword;
 
-    @Value("${app.otp.dev-fallback:true}")
+    @Value("${app.otp.dev-fallback:false}")
     private boolean allowDevOtpFallback;
 
     private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
