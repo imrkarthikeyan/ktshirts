@@ -46,6 +46,12 @@ public class AuthService {
     @Value("${app.mail.password:}")
     private String mailPassword;
 
+    @Value("${app.mail.brevo.api-key:}")
+    private String brevoApiKey;
+
+    @Value("${app.mail.resend.api-key:}")
+    private String resendApiKey;
+
     @Value("${app.otp.dev-fallback:false}")
     private boolean allowDevOtpFallback;
 
@@ -220,14 +226,21 @@ public class AuthService {
     }
 
     private String sendOtpEmail(String email, String otp) throws Exception {
+        if (sendViaBrevoApi(email, otp)) {
+            return "OTP sent to your email";
+        }
+        if (sendViaResendApi(email, otp)) {
+            return "OTP sent to your email";
+        }
+
         boolean mailConfigured = mailUsername != null && !mailUsername.isBlank() && mailPassword != null && !mailPassword.isBlank();
 
         if (!mailConfigured) {
             if (allowDevOtpFallback) {
-                LOGGER.warn("SMTP not configured. Using development OTP fallback for {}. OTP: {}", email, otp);
+                LOGGER.warn("SMTP/HTTP Mail not configured. Using development OTP fallback for {}. OTP: {}", email, otp);
                 return "OTP email is not configured on server. Development OTP: " + otp;
             }
-            throw new Exception("Unable to send OTP email. Configure APP_MAIL_USERNAME/APP_MAIL_PASSWORD with a valid Gmail App Password.");
+            throw new Exception("Unable to send OTP email. Configure BREVO_API_KEY/RESEND_API_KEY or APP_MAIL_USERNAME/APP_MAIL_PASSWORD.");
         }
 
         try {
@@ -248,6 +261,75 @@ public class AuthService {
             }
             throw new Exception("Unable to send OTP email from " + mailUsername + ". Check Gmail App Password / SMTP access. Reason: " + ex.getMessage());
         }
+    }
+
+    private boolean sendViaBrevoApi(String email, String otp) {
+        if (brevoApiKey == null || brevoApiKey.isBlank()) {
+            return false;
+        }
+        try {
+            java.net.http.HttpClient client = java.net.http.HttpClient.newHttpClient();
+            String senderMail = (fromEmail != null && !fromEmail.isBlank()) ? fromEmail : "trialbytshirt@gmail.com";
+            String jsonBody = String.format(
+                "{\"sender\":{\"name\":\"TRIAL BY TSHIRT\",\"email\":\"%s\"},\"to\":[{\"email\":\"%s\"}],\"subject\":\"TRIAL BY TSHIRT - Signup OTP\",\"htmlContent\":\"<p>Your OTP for signup is: <strong>%s</strong></p><p>This OTP is valid for 10 minutes.</p>\"}",
+                senderMail,
+                email,
+                otp
+            );
+
+            java.net.http.HttpRequest request = java.net.http.HttpRequest.newBuilder()
+                .uri(java.net.URI.create("https://api.brevo.com/v3/smtp/email"))
+                .header("accept", "application/json")
+                .header("api-key", brevoApiKey.trim())
+                .header("content-type", "application/json")
+                .POST(java.net.http.HttpRequest.BodyPublishers.ofString(jsonBody))
+                .build();
+
+            java.net.http.HttpResponse<String> response = client.send(request, java.net.http.HttpResponse.BodyHandlers.ofString());
+            if (response.statusCode() >= 200 && response.statusCode() < 300) {
+                LOGGER.info("OTP email sent successfully via Brevo HTTP API to {}", email);
+                return true;
+            } else {
+                LOGGER.error("Brevo API returned error status {}: {}", response.statusCode(), response.body());
+            }
+        } catch (Exception ex) {
+            LOGGER.error("Failed to send OTP via Brevo API: {}", ex.getMessage());
+        }
+        return false;
+    }
+
+    private boolean sendViaResendApi(String email, String otp) {
+        if (resendApiKey == null || resendApiKey.isBlank()) {
+            return false;
+        }
+        try {
+            java.net.http.HttpClient client = java.net.http.HttpClient.newHttpClient();
+            String sender = (fromEmail != null && !fromEmail.isBlank()) ? fromEmail : "onboarding@resend.dev";
+            String jsonBody = String.format(
+                "{\"from\":\"TRIAL BY TSHIRT <%s>\",\"to\":[\"%s\"],\"subject\":\"TRIAL BY TSHIRT - Signup OTP\",\"html\":\"<p>Your OTP for signup is: <strong>%s</strong></p><p>This OTP is valid for 10 minutes.</p>\"}",
+                sender,
+                email,
+                otp
+            );
+
+            java.net.http.HttpRequest request = java.net.http.HttpRequest.newBuilder()
+                .uri(java.net.URI.create("https://api.resend.com/emails"))
+                .header("Authorization", "Bearer " + resendApiKey.trim())
+                .header("Content-Type", "application/json")
+                .POST(java.net.http.HttpRequest.BodyPublishers.ofString(jsonBody))
+                .build();
+
+            java.net.http.HttpResponse<String> response = client.send(request, java.net.http.HttpResponse.BodyHandlers.ofString());
+            if (response.statusCode() >= 200 && response.statusCode() < 300) {
+                LOGGER.info("OTP email sent successfully via Resend HTTP API to {}", email);
+                return true;
+            } else {
+                LOGGER.error("Resend API returned error status {}: {}", response.statusCode(), response.body());
+            }
+        } catch (Exception ex) {
+            LOGGER.error("Failed to send OTP via Resend API: {}", ex.getMessage());
+        }
+        return false;
     }
 
     private record PendingSignupOtp(SignupRequest signupRequest, String otp, LocalDateTime expiresAt) {
