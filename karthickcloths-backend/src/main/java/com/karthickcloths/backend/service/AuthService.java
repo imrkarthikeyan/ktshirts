@@ -241,9 +241,10 @@ public class AuthService {
             mailSender.send(message);
             return "OTP sent to your email";
         } catch (Exception ex) {
+            LOGGER.error("SMTP mail send failed for {}: {}", email, ex.getMessage());
             if (allowDevOtpFallback) {
                 LOGGER.warn("Email send failed. Using development OTP fallback for {}. OTP: {}", email, otp);
-                return "OTP email delivery failed. Development OTP: " + otp;
+                return "SMTP delivery failed (Render firewall blocks SMTP ports). Development OTP: " + otp;
             }
             throw new Exception("Unable to send OTP email from " + mailUsername + ". Check Gmail App Password / SMTP access. Reason: " + ex.getMessage());
         }
