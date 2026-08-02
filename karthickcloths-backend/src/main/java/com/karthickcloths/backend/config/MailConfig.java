@@ -14,7 +14,7 @@ public class MailConfig {
     @Value("${app.mail.host:smtp.gmail.com}")
     private String mailHost;
 
-    @Value("${app.mail.port:587}")
+    @Value("${app.mail.port:465}")
     private int mailPort;
 
     @Value("${app.mail.username:trialbytshirt@gmail.com}")
@@ -26,16 +26,19 @@ public class MailConfig {
     @Value("${app.mail.smtp.auth:true}")
     private boolean smtpAuth;
 
-    @Value("${app.mail.smtp.starttls.enable:true}")
+    @Value("${app.mail.smtp.starttls.enable:false}")
     private boolean smtpStartTlsEnable;
 
-    @Value("${app.mail.smtp.connectiontimeout:5000}")
+    @Value("${app.mail.smtp.ssl.enable:true}")
+    private boolean smtpSslEnable;
+
+    @Value("${app.mail.smtp.connectiontimeout:10000}")
     private String connectionTimeout;
 
-    @Value("${app.mail.smtp.timeout:5000}")
+    @Value("${app.mail.smtp.timeout:10000}")
     private String timeout;
 
-    @Value("${app.mail.smtp.writetimeout:5000}")
+    @Value("${app.mail.smtp.writetimeout:10000}")
     private String writeTimeout;
 
     @Bean
@@ -48,9 +51,19 @@ public class MailConfig {
 
         Properties properties = mailSender.getJavaMailProperties();
         properties.put("mail.smtp.auth", String.valueOf(smtpAuth));
-        properties.put("mail.smtp.starttls.enable", String.valueOf(smtpStartTlsEnable));
-        properties.put("mail.smtp.starttls.required", "true");
-        properties.put("mail.smtp.ssl.protocols", "TLSv1.2");
+
+        boolean useSsl = smtpSslEnable || mailPort == 465;
+        if (useSsl) {
+            properties.put("mail.smtp.ssl.enable", "true");
+            properties.put("mail.smtp.socketFactory.port", String.valueOf(mailPort));
+            properties.put("mail.smtp.socketFactory.class", "javax.net.ssl.SSLSocketFactory");
+            properties.put("mail.smtp.socketFactory.fallback", "false");
+        } else {
+            properties.put("mail.smtp.starttls.enable", String.valueOf(smtpStartTlsEnable));
+            properties.put("mail.smtp.starttls.required", "true");
+        }
+
+        properties.put("mail.smtp.ssl.protocols", "TLSv1.2 TLSv1.3");
         properties.put("mail.smtp.connectiontimeout", connectionTimeout);
         properties.put("mail.smtp.timeout", timeout);
         properties.put("mail.smtp.writetimeout", writeTimeout);
